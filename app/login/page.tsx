@@ -79,19 +79,23 @@ export default function LoginPage() {
                                 required
                             />
                         </div>
-                        <TestConnection />
-                    </form>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                    <p className="text-sm text-gray-500">
-                        Don't have an account?{" "}
-                        <Link href="/signup" className="text-blue-600 hover:underline">
-                            Sign up
-                        </Link>
-                    </p>
-                </CardFooter>
-            </Card>
-        </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? "Signing in..." : "Sign In"}
+                    </Button>
+                    <TestConnection />
+                </form>
+            </CardContent>
+            <CardFooter className="flex justify-center">
+                <p className="text-sm text-gray-500">
+                    Don't have an account?{" "}
+                    <Link href="/signup" className="text-blue-600 hover:underline">
+                        Sign up
+                    </Link>
+                </p>
+            </CardFooter>
+        </Card>
+        </div >
     );
 }
 
