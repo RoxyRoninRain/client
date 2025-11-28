@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { Dog, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,23 +13,58 @@ export default function Home() {
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        <QuickActionButton
-          icon={<Dog size={48} />}
-          label="My Kennel"
-          description="Manage your dogs and litters"
-        />
-        <QuickActionButton
-          icon={<Search size={48} />}
-          label="Find Stud"
-          description="Search the directory"
-        />
+        <Link href="/kennel" className="block w-full">
+          <QuickActionButton
+            icon={<Dog size={48} />}
+            label="My Kennel"
+            description="Manage your dogs and litters"
+          />
+        </Link>
+        <Link href="/directory" className="block w-full">
+          <QuickActionButton
+            icon={<Search size={48} />}
+            label="Find Stud"
+            description="Search the directory"
+          />
+        </Link>
       </div>
 
-      {/* Placeholder for future sections */}
       <div className="mt-16 text-center text-gray-500">
         <p>Select an action to get started.</p>
+        <TestConnection />
       </div>
     </main>
+  );
+}
+
+function TestConnection() {
+  const [status, setStatus] = useState<string>("");
+
+  const testConnection = async () => {
+    setStatus("Testing...");
+    console.log("Test button clicked");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hello`);
+      console.log("Fetch response received", res);
+      const data = await res.json();
+      console.log("Data parsed", data);
+      setStatus("Success: " + JSON.stringify(data));
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setStatus("Error: " + String(err));
+    }
+  };
+
+  return (
+    <div className="mt-4 flex flex-col items-center gap-2">
+      <button
+        onClick={testConnection}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+      >
+        Test Local Connection
+      </button>
+      {status && <p className="text-sm font-mono bg-gray-100 p-2 rounded">{status}</p>}
+    </div>
   );
 }
 
