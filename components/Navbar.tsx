@@ -7,8 +7,10 @@ import { Bell, UserCircle, Menu, LogOut, Shield } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 
-export default function Navbar() {
-    const [userId, setUserId] = useState<string | null>(null);
+import { User } from "@supabase/supabase-js";
+
+export default function Navbar({ user }: { user: User | null }) {
+    const [userId, setUserId] = useState<string | null>(user?.id || null);
     const [userRole, setUserRole] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
@@ -16,23 +18,40 @@ export default function Navbar() {
     const router = useRouter();
 
     useEffect(() => {
-        async function getUser() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setUserId(user.id);
-                // Fetch profile to get role
+        // If user prop is provided, we already have the ID.
+        // We still need to fetch the role if we have a user.
+        if (user) {
+            setUserId(user.id);
+            async function getRole() {
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('role')
-                    .eq('id', user.id)
+                    .eq('id', user!.id)
                     .single();
                 if (profile) {
                     setUserRole(profile.role);
                 }
             }
+            getRole();
+        } else {
+            // Fallback for client-side navigation or if prop is missing (though layout provides it)
+            async function getUser() {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    setUserId(user.id);
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single();
+                    if (profile) {
+                        setUserRole(profile.role);
+                    }
+                }
+            }
+            getUser();
         }
-        getUser();
-    }, []);
+    }, [user]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();

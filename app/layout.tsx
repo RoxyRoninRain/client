@@ -18,18 +18,23 @@ export const metadata: Metadata = {
   description: "The premier platform for Akita owners and breeders.",
 };
 
-export default function RootLayout({
+import { createClient } from "@/utils/supabase/server";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Navbar />
+        <Navbar user={user} />
         {children}
       </body>
     </html>
