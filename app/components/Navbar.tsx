@@ -76,7 +76,7 @@ export default function Navbar() {
                         </Link>
 
                         {/* Profile */}
-                        <Link href={userId ? `/profile/${userId}` : "/login"} className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
+                        <Link href="/profile" className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
                             <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600">
                                 <UserCircle size={24} className="text-gray-300" />
                             </div>
@@ -120,7 +120,7 @@ export default function Navbar() {
                         <Link href="/kennel" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg" onClick={() => setIsMenuOpen(false)}>
                             My Kennel
                         </Link>
-                        <Link href={userId ? `/profile/${userId}` : "/login"} className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                        <Link href="/profile" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg" onClick={() => setIsMenuOpen(false)}>
                             My Profile
                         </Link>
                         {userId && (
