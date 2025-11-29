@@ -44,6 +44,12 @@ export default function Navbar() {
 
     const isActive = (path: string) => pathname === path;
 
+    // Hide Navbar on Landing Page (root path and not logged in)
+    // We wait for the user check to complete (or default to hidden on root to avoid flash)
+    if (pathname === "/" && !userId) {
+        return null;
+    }
+
     return (
         <nav className="bg-[#0f172a] border-b border-gray-800 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

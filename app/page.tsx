@@ -8,6 +8,7 @@ import ChampionsFeed from "./components/dashboard/ChampionsFeed";
 import CalendarWidget from "./components/dashboard/CalendarWidget";
 import CommunityPulse from "./components/dashboard/CommunityPulse";
 import QuickActions from "./components/dashboard/QuickActions";
+import LandingPage from "./components/LandingPage";
 
 export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -25,6 +26,16 @@ export default function Home() {
     }
     getUser();
   }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 dark:border-white"></div>
+    </div>;
+  }
+
+  if (!userId) {
+    return <LandingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-200 font-[family-name:var(--font-geist-sans)]">
