@@ -1,75 +1,39 @@
-"use client";
-
-import { useState } from "react";
-import { ShieldCheck, Mail } from "lucide-react";
+import Image from "next/image";
 
 interface DogProfileProps {
     name: string;
     breed: string;
     is_verified: boolean;
     owner_email: string;
-    imageUrl?: string;
-    registration_number?: string;
+    registration_number: string;
+    imageUrl: string;
 }
 
-export default function DogProfile({
-    name,
-    breed,
-    is_verified,
-    owner_email,
-    imageUrl,
-    registration_number,
-}: DogProfileProps) {
-    const [showEmail, setShowEmail] = useState(false);
-
-    const handleContactClick = () => {
-        setShowEmail(true);
-        window.location.href = `mailto:${owner_email}`;
-    };
-
+export default function DogProfile({ name, breed, is_verified, owner_email, registration_number, imageUrl }: DogProfileProps) {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden max-w-md mx-auto border border-gray-100 dark:border-gray-700">
-            <div className="h-48 bg-gray-200 dark:bg-gray-700 relative">
-                {imageUrl ? (
-                    <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        No Image
-                    </div>
-                )}
-                {is_verified && (
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white p-2 rounded-full shadow-lg" title="Verified Health Data">
-                        <ShieldCheck size={24} />
-                    </div>
-                )}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <div className="relative w-32 h-32 md:w-48 md:h-48 flex-shrink-0">
+                <Image
+                    src={imageUrl}
+                    alt={name}
+                    fill
+                    className="object-cover rounded-full md:rounded-xl"
+                />
             </div>
 
-            <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            {name}
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-300">{breed}</p>
-                        {registration_number && (
-                            <p className="text-xs text-gray-400 mt-1">Reg: {registration_number}</p>
-                        )}
-                    </div>
+            <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                    <h1 className="text-2xl font-bold font-serif text-gray-900 dark:text-white">{name}</h1>
+                    {is_verified && (
+                        <span className="bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full font-semibold">Verified Owner</span>
+                    )}
                 </div>
 
-                <div className="mt-6">
-                    <button
-                        onClick={handleContactClick}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                        <Mail size={20} />
-                        {showEmail ? "Opening Mail Client..." : "Contact Owner"}
-                    </button>
-                    {showEmail && (
-                        <p className="text-center text-sm text-gray-500 mt-2 select-all">
-                            {owner_email}
-                        </p>
-                    )}
+                <p className="text-gray-500 mb-4">{breed} • Reg: {registration_number}</p>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg inline-block">
+                    <p className="text-sm text-gray-500">Owner Contact</p>
+                    <p className="font-medium text-teal-600">{owner_email}</p>
                 </div>
             </div>
         </div>

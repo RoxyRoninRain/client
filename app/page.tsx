@@ -1,39 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { Dog, Search } from "lucide-react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import AnnouncementsCard from "./components/dashboard/AnnouncementsCard";
+import ChampionsFeed from "./components/dashboard/ChampionsFeed";
+import CalendarWidget from "./components/dashboard/CalendarWidget";
+import CommunityPulse from "./components/dashboard/CommunityPulse";
+import QuickActions from "./components/dashboard/QuickActions";
 
 export default function Home() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+      setLoading(false);
+    }
+    getUser();
+  }, []);
+
   return (
-    <main className="min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">Akita Connect</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">Preservationist Akita Breeders</p>
-      </header>
+    <div className="min-h-screen bg-slate-200 font-[family-name:var(--font-geist-sans)]">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        <Link href="/kennel" className="block w-full">
-          <QuickActionButton
-            icon={<Dog size={48} />}
-            label="My Kennel"
-            description="Manage your dogs and litters"
-          />
-        </Link>
-        <Link href="/directory" className="block w-full">
-          <QuickActionButton
-            icon={<Search size={48} />}
-            label="Find Stud"
-            description="Search the directory"
-          />
-        </Link>
-      </div>
 
-      <div className="mt-16 text-center text-gray-500">
-        <p>Select an action to get started.</p>
-        <TestConnection />
-      </div>
-    </main>
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold font-serif text-[#0f172a]">Dashboard</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back to Akita Connect</p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+          {/* Top Row: Announcements & Community Pulse (Large) */}
+          <div className="md:col-span-4 h-[400px]">
+            <AnnouncementsCard />
+          </div>
+
+          <div className="md:col-span-8 h-[400px]">
+            <CommunityPulse />
+          </div>
+
+          {/* Middle Row: Champions Feed (List) & Calendar */}
+          <div className="md:col-span-6 h-[400px]">
+            <ChampionsFeed />
+          </div>
+
+          <div className="md:col-span-6 h-[400px]">
+            <CalendarWidget />
+          </div>
+
+          {/* Bottom Row: Quick Actions */}
+          <div className="md:col-span-12">
+            <QuickActions />
+          </div>
+
+        </div>
+
+        <div className="mt-16 text-center text-gray-500">
+          <TestConnection />
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -42,12 +76,9 @@ function TestConnection() {
 
   const testConnection = async () => {
     setStatus("Testing...");
-    console.log("Test button clicked");
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hello`);
-      console.log("Fetch response received", res);
       const data = await res.json();
-      console.log("Data parsed", data);
       setStatus("Success: " + JSON.stringify(data));
     } catch (err) {
       console.error("Fetch error:", err);
@@ -56,26 +87,16 @@ function TestConnection() {
   };
 
   return (
-    <div className="mt-4 flex flex-col items-center gap-2">
+    <div className="mt-4 flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
       <button
         onClick={testConnection}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        className="text-xs text-gray-400 hover:text-gray-600 underline"
       >
-        Test Local Connection
+        Check Server Status
       </button>
-      {status && <p className="text-sm font-mono bg-gray-100 p-2 rounded">{status}</p>}
+      <p className="text-[10px] text-gray-400">API: {process.env.NEXT_PUBLIC_API_URL || "Not Set"}</p>
+      {status && <p className="text-xs font-mono bg-gray-100 p-2 rounded">{status}</p>}
     </div>
   );
 }
 
-function QuickActionButton({ icon, label, description }: { icon: React.ReactNode, label: string, description: string }) {
-  return (
-    <button className="flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700 w-full aspect-square group cursor-pointer">
-      <div className="mb-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-        {icon}
-      </div>
-      <h2 className="text-2xl font-bold mb-2">{label}</h2>
-      <p className="text-gray-500 dark:text-gray-400 text-center">{description}</p>
-    </button>
-  );
-}

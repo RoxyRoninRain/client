@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ImageUpload from "@/components/ImageUpload";
 
 interface Dog {
     id: string;
@@ -22,6 +23,7 @@ export default function LogLitterPage() {
         dam_id: "",
         whelp_date: "",
         num_puppies: "0",
+        image_url: "",
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -69,6 +71,7 @@ export default function LogLitterPage() {
                 sire_id: formData.sire_id || null, // Optional if external
                 dam_id: formData.dam_id || null,   // Optional if external
                 whelp_date: formData.whelp_date,
+                image_url: formData.image_url,
                 // We might want to store puppy count in a separate table or column, 
                 // but for now let's just create the litter record.
             });
@@ -95,6 +98,16 @@ export default function LogLitterPage() {
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}
+
+                        <div className="space-y-2">
+                            <Label>Litter Photo</Label>
+                            <ImageUpload
+                                value={formData.image_url}
+                                onChange={(url: string) => setFormData({ ...formData, image_url: url })}
+                                className="w-full max-w-xs"
+                                aspectRatio="video"
+                            />
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">

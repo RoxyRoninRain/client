@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ImageUpload from "@/components/ImageUpload";
 
 export default function AddDogPage() {
     const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export default function AddDogPage() {
         registration_number: "",
         sire_name: "",
         dam_name: "",
+        image_url: "",
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,7 @@ export default function AddDogPage() {
                 registration_number: formData.registration_number,
                 sire_name: formData.sire_name,
                 dam_name: formData.dam_name,
+                image_url: formData.image_url,
                 // Defaults for now
                 is_active_stud: false,
                 is_available_puppy: false,
@@ -75,6 +78,15 @@ export default function AddDogPage() {
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}
+
+                        <div className="space-y-2">
+                            <Label>Dog Photo</Label>
+                            <ImageUpload
+                                value={formData.image_url}
+                                onChange={(url: string) => setFormData({ ...formData, image_url: url })}
+                                className="w-full max-w-xs"
+                            />
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">

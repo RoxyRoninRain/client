@@ -125,6 +125,7 @@ function TestConnection() {
             >
                 Test Local Connection
             </button>
+            <p className="text-[10px] text-gray-400">API: {process.env.NEXT_PUBLIC_API_URL || "Not Set"}</p>
             {status && <p className="text-xs font-mono bg-gray-100 p-2 rounded max-w-[300px] break-all">{status}</p>}
         </div>
     );
