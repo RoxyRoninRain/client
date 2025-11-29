@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, MessageSquare, Send, User, Pin, Lock } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, User, Pin, Lock, Pencil, Trash2, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +46,11 @@ export default function TopicPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+
+    // Edit State
+    const [editingPostId, setEditingPostId] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState("");
+
     const supabase = createClient();
 
     // Helper to validate UUID
@@ -162,6 +167,48 @@ export default function TopicPage() {
         setSubmitting(false);
     }
 
+    const handleEditClick = (post: Post) => {
+        setEditingPostId(post.id);
+        setEditContent(post.content);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingPostId(null);
+        setEditContent("");
+    };
+
+    const handleUpdatePost = async (postId: string) => {
+        if (!editContent.trim()) return;
+
+        const { error } = await supabase
+            .from('forum_posts')
+            .update({ content: editContent })
+            .eq('id', postId);
+
+        if (error) {
+            alert("Failed to update post: " + error.message);
+        } else {
+            setPosts(posts.map(p => p.id === postId ? { ...p, content: editContent } : p));
+            setEditingPostId(null);
+            setEditContent("");
+        }
+    };
+
+    const handleDeletePost = async (postId: string) => {
+        if (!window.confirm("Are you sure you want to delete this post?")) return;
+
+        const { error } = await supabase
+            .from('forum_posts')
+            .delete()
+            .eq('id', postId);
+
+        if (error) {
+            alert("Failed to delete post: " + error.message);
+        } else {
+            setPosts(prev => prev.filter(p => p.id !== postId));
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading discussion...</div>;
 
     if (!topic) {
@@ -193,7 +240,7 @@ export default function TopicPage() {
                         </CardTitle>
                         <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
                             <User size={14} />
-                            <span>Started by <span className="font-medium text-gray-700 dark:text-gray-300">{topic.author?.kennel_name || topic.author?.real_name}</span></span>
+                            <span>Started by <span className="font-medium text-gray-700 dark:text-gray-300">{topic.author?.real_name || topic.author?.kennel_name}</span></span>
                             <span className="mx-2">•</span>
                             <span>{new Date(topic.created_at).toLocaleDateString()}</span>
                         </div>
@@ -211,24 +258,54 @@ export default function TopicPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">
-                                                {post.author?.kennel_name || post.author?.real_name}
+                                                {post.author?.real_name || post.author?.kennel_name}
                                             </p>
                                             <p className="text-xs text-gray-400">
                                                 {new Date(post.created_at).toLocaleString()}
                                             </p>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                    <p className="whitespace-pre-wrap">{post.content}</p>
-                                    {post.image_urls && post.image_urls.length > 0 && (
-                                        <div className="mt-4 grid grid-cols-2 gap-2">
-                                            {post.image_urls.map((url, idx) => (
-                                                <img key={idx} src={url} alt="Post attachment" className="rounded-lg max-h-64 object-cover" />
-                                            ))}
+                                    {/* Edit/Delete Actions */}
+                                    {userId === post.author_id && !editingPostId && (
+                                        <div className="flex gap-2">
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(post)} className="h-8 w-8 text-gray-500 hover:text-blue-600">
+                                                <Pencil size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)} className="h-8 w-8 text-gray-500 hover:text-red-600">
+                                                <Trash2 size={14} />
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
+
+                                {editingPostId === post.id ? (
+                                    <div className="space-y-4">
+                                        <Textarea
+                                            value={editContent}
+                                            onChange={(e) => setEditContent(e.target.value)}
+                                            className="min-h-[100px]"
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                                                <X size={14} className="mr-1" /> Cancel
+                                            </Button>
+                                            <Button size="sm" onClick={() => handleUpdatePost(post.id)} className="bg-teal-600 hover:bg-teal-700 text-white">
+                                                <Save size={14} className="mr-1" /> Save
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+                                        <p className="whitespace-pre-wrap">{post.content}</p>
+                                        {post.image_urls && post.image_urls.length > 0 && (
+                                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                                {post.image_urls.map((url, idx) => (
+                                                    <img key={idx} src={url} alt="Post attachment" className="rounded-lg max-h-64 object-cover" />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     ))}
@@ -258,9 +335,19 @@ export default function TopicPage() {
                                         className="min-h-[120px]"
                                     />
 
-                                    <ImageUpload onChange={(url) => setReplyImages(prev => [...prev, url])} />
-
-                                    <div className="flex justify-end">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex gap-2">
+                                            <ImageUpload
+                                                variant="button"
+                                                onChange={(url) => setReplyImages(prev => [...prev, url])}
+                                                label="Add Image"
+                                            />
+                                            {replyImages.length > 0 && (
+                                                <span className="text-sm text-gray-500 flex items-center">
+                                                    {replyImages.length} image(s) attached
+                                                </span>
+                                            )}
+                                        </div>
                                         <Button
                                             onClick={handleReply}
                                             disabled={submitting || (!newReply.trim() && replyImages.length === 0)}
@@ -269,6 +356,23 @@ export default function TopicPage() {
                                             {submitting ? "Posting..." : <><Send size={16} className="mr-2" /> Post Reply</>}
                                         </Button>
                                     </div>
+
+                                    {/* Preview Attached Images */}
+                                    {replyImages.length > 0 && (
+                                        <div className="flex gap-2 overflow-x-auto py-2">
+                                            {replyImages.map((url, idx) => (
+                                                <div key={idx} className="relative w-20 h-20 flex-shrink-0">
+                                                    <img src={url} alt="Preview" className="w-full h-full object-cover rounded-md" />
+                                                    <button
+                                                        onClick={() => setReplyImages(prev => prev.filter((_, i) => i !== idx))}
+                                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">

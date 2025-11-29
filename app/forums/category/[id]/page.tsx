@@ -130,7 +130,7 @@ export default function CategoryPage() {
                                             <User size={14} />
                                             <span>
                                                 Posted by <span className="font-medium text-gray-700 dark:text-gray-300">
-                                                    {topic.author?.kennel_name || topic.author?.real_name || "Unknown"}
+                                                    {topic.author?.real_name || topic.author?.kennel_name || "Unknown"}
                                                 </span>
                                             </span>
                                         </div>

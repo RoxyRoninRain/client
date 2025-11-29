@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -157,7 +157,25 @@ function NewTopicContent() {
 
                             <div className="space-y-2">
                                 <Label>Images (Optional)</Label>
-                                <ImageUpload onChange={(url) => setImages(prev => [...prev, url])} />
+                                <div className="flex gap-2 items-start flex-wrap">
+                                    <ImageUpload
+                                        variant="button"
+                                        onChange={(url) => setImages(prev => [...prev, url])}
+                                        label="Add Image"
+                                    />
+                                    {images.map((url, idx) => (
+                                        <div key={idx} className="relative w-20 h-20 flex-shrink-0">
+                                            <img src={url} alt="Preview" className="w-full h-full object-cover rounded-md" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-4">

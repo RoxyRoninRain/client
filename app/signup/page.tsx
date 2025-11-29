@@ -13,6 +13,7 @@ import Link from "next/link";
 export default function SignupPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [inviteCode, setInviteCode] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -23,6 +24,12 @@ export default function SignupPage() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            setLoading(false);
+            return;
+        }
 
         // 1. Validate Invite Code via Backend
         try {
@@ -110,6 +117,16 @@ export default function SignupPage() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Input
+                                id="confirmPassword"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                             />
                         </div>
