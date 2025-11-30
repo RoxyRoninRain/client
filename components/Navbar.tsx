@@ -111,6 +111,12 @@ export default function Navbar({ user }: { user: User | null }) {
                         >
                             Directory
                         </Link>
+                        <Link
+                            href="/marketplace"
+                            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/marketplace') ? 'text-white bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}
+                        >
+                            Marketplace
+                        </Link>
 
                         {/* Admin Link */}
                         {userRole === 'admin' && (
@@ -168,6 +174,9 @@ export default function Navbar({ user }: { user: User | null }) {
                         </Link>
                         <Link href="/directory" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg" onClick={() => setIsMenuOpen(false)}>
                             Directory
+                        </Link>
+                        <Link href="/marketplace" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                            Marketplace
                         </Link>
                         {userRole === 'admin' && (
                             <Link href="/admin" className="block px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-800 rounded-lg flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
