@@ -107,7 +107,7 @@ export default function CommunityPulse() {
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{topic.title}</h4>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            by {topic.profiles?.kennel_name || topic.profiles?.real_name || "Unknown"} • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
+                                            by {topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"} • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
                                         </p>
                                     </div>
                                 </Link>
@@ -126,10 +126,10 @@ export default function CommunityPulse() {
                             newMembers.map((user) => (
                                 <Link href={`/profile/${user.id}`} key={user.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 transition-colors">
                                     <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">
-                                        {(user.kennel_name || user.real_name || "?").substring(0, 2).toUpperCase()}
+                                        {(user.real_name || user.kennel_name || "?").substring(0, 2).toUpperCase()}
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.kennel_name || user.real_name}</h4>
+                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.real_name || user.kennel_name}</h4>
                                         <p className="text-xs text-gray-500">{user.region || "Unknown Location"}</p>
                                     </div>
                                 </Link>
