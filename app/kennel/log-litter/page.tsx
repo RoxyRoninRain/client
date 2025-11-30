@@ -66,8 +66,8 @@ export default function LogLitterPage() {
                     <p className="text-gray-500 mb-6">
                         Litter tracking is exclusive to ACA Members. Upgrade your account to unlock advanced kennel management tools.
                     </p>
-                    <Button className="w-full bg-teal-600 hover:bg-teal-700">
-                        Join ACA Today
+                    <Button className="w-full bg-teal-600 hover:bg-teal-700" asChild>
+                        <a href="mailto:support@akitaconnect.com?subject=Upgrade to ACA Member">Join ACA Today</a>
                     </Button>
                 </Card>
             </div>

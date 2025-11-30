@@ -71,7 +71,9 @@ export default function AddDogPage() {
                     </p>
                     <div className="flex gap-4 justify-center">
                         <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
-                        <Button className="bg-teal-600 hover:bg-teal-700">Join ACA Today</Button>
+                        <Button className="bg-teal-600 hover:bg-teal-700" asChild>
+                            <a href="mailto:support@akitaconnect.com?subject=Upgrade to ACA Member">Join ACA Today</a>
+                        </Button>
                     </div>
                 </Card>
             </div>
