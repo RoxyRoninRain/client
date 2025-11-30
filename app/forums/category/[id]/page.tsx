@@ -110,7 +110,7 @@ export default function CategoryPage() {
                     ) : (
                         topics.map(topic => (
                             <Link key={topic.id} href={`/forums/${topic.id}`}>
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                <Card className="border-2 border-gray-300 dark:border-gray-600 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
                                     <CardHeader className="pb-2">
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-center gap-2">

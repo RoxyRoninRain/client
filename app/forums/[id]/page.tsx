@@ -222,7 +222,7 @@ export default function TopicPage() {
                     <ArrowLeft size={16} className="mr-1" /> Back to {topic.category_id ? "Category" : "Forums"}
                 </Link>
 
-                <Card className="border-l-4 border-l-teal-500">
+                <Card className="border-2 border-gray-300 dark:border-gray-600 border-l-4 border-l-teal-500 shadow-md">
                     <CardHeader>
                         <div className="flex items-center gap-2 mb-2">
                             {topic.is_pinned && <Pin size={16} className="text-teal-600 fill-teal-600" />}
@@ -242,7 +242,7 @@ export default function TopicPage() {
 
                 <div className="space-y-6">
                     {posts.map((post) => (
-                        <Card key={post.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                        <Card key={post.id} className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 shadow-md hover:shadow-lg transition-shadow">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">

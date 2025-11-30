@@ -79,7 +79,7 @@ export default function ForumsPage() {
                     ) : (
                         categories.map(category => (
                             <Link key={category.id} href={`/forums/category/${category.id}`}>
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                <Card className="border-2 border-gray-300 dark:border-gray-600 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
                                     <CardContent className="p-6 flex items-center gap-4">
                                         <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                                             {getIcon(category.icon)}
