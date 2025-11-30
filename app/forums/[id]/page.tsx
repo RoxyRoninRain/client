@@ -39,6 +39,7 @@ interface Topic {
 export default function TopicPage() {
     const { id } = useParams();
     const router = useRouter();
+    const supabase = createClient();
     const [topic, setTopic] = useState<Topic | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [newReply, setNewReply] = useState("");
@@ -50,79 +51,71 @@ export default function TopicPage() {
     // Edit State
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState("");
-
-    const supabase = createClient();
-
-    // Helper to validate UUID
-    const isValidUUID = (uuid: string) => {
-        const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        return regex.test(uuid);
-    };
-
     useEffect(() => {
         async function loadData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUserId(user?.id || null);
+            if (!id) return;
+            setLoading(true);
 
-            if (id && typeof id === 'string') {
-                if (!isValidUUID(id)) {
-                    setLoading(false);
-                    return; // Invalid ID, stop here
+            // Fetch Topic
+            const { data: topicData, error: topicError } = await supabase
+                .from('forum_topics')
+                .select(`*`)
+                .eq('id', id)
+                .single();
+
+            if (topicError) {
+                console.error("Error fetching topic:", JSON.stringify(topicError, null, 2));
+            } else {
+                // Fetch author details
+                if (topicData.author_id) {
+                    const { data: authorData } = await supabase
+                        .from('profiles')
+                        .select('kennel_name, real_name')
+                        .eq('id', topicData.author_id)
+                        .single();
+
+                    if (authorData) {
+                        (topicData as any).author = authorData;
+                    }
                 }
+                setTopic(topicData);
+            }
 
-                // Fetch Topic
-                const { data: topicData, error: topicError } = await supabase
-                    .from('forum_topics')
-                    .select(`*`)
-                    .eq('id', id)
-                    .single();
+            // Fetch Posts
+            const { data: postsData, error: postsError } = await supabase
+                .from('forum_posts')
+                .select(`*`)
+                .eq('topic_id', id)
+                .order('created_at', { ascending: true });
 
-                if (topicError) {
-                    console.error("Error fetching topic:", JSON.stringify(topicError, null, 2));
-                } else {
-                    // Fetch author details
-                    if (topicData.author_id) {
+            if (postsError) {
+                console.error("Error fetching posts:", JSON.stringify(postsError, null, 2));
+            } else {
+                // Manually fetch authors for posts
+                const postsWithAuthors = await Promise.all((postsData || []).map(async (post: any) => {
+                    if (post.author_id) {
                         const { data: authorData } = await supabase
                             .from('profiles')
                             .select('kennel_name, real_name')
-                            .eq('id', topicData.author_id)
+                            .eq('id', post.author_id)
                             .single();
-
-                        if (authorData) {
-                            (topicData as any).author = authorData;
-                        }
+                        return { ...post, author: authorData };
                     }
-                    setTopic(topicData);
-                }
-
-                // Fetch Posts
-                const { data: postsData, error: postsError } = await supabase
-                    .from('forum_posts')
-                    .select(`*`)
-                    .eq('topic_id', id)
-                    .order('created_at', { ascending: true });
-
-                if (postsError) {
-                    console.error("Error fetching posts:", JSON.stringify(postsError, null, 2));
-                } else {
-                    // Manually fetch authors for posts
-                    const postsWithAuthors = await Promise.all((postsData || []).map(async (post) => {
-                        if (post.author_id) {
-                            const { data: authorData } = await supabase
-                                .from('profiles')
-                                .select('kennel_name, real_name')
-                                .eq('id', post.author_id)
-                                .single();
-                            return { ...post, author: authorData };
-                        }
-                        return post;
-                    }));
-                    setPosts(postsWithAuthors);
-                }
+                    return post;
+                }));
+                setPosts(postsWithAuthors);
             }
             setLoading(false);
         }
+
         loadData();
+
+        // Check user
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUserId(user?.id || null);
+        }
+        checkUser();
     }, [id]);
 
     async function handleReply() {
@@ -260,52 +253,48 @@ export default function TopicPage() {
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">
                                                 {post.author?.real_name || post.author?.kennel_name}
                                             </p>
-                                            <p className="text-xs text-gray-400">
-                                                {new Date(post.created_at).toLocaleString()}
-                                            </p>
+
+                                            {editingPostId === post.id ? (
+                                                <div className="space-y-4">
+                                                    <Textarea
+                                                        value={editContent}
+                                                        onChange={(e) => setEditContent(e.target.value)}
+                                                        className="min-h-[100px]"
+                                                    />
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                                                            <X size={14} className="mr-1" /> Cancel
+                                                        </Button>
+                                                        <Button size="sm" onClick={() => handleUpdatePost(post.id)} className="bg-teal-600 hover:bg-teal-700 text-white">
+                                                            <Save size={14} className="mr-1" /> Save
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+                                                    <p className="whitespace-pre-wrap">{post.content}</p>
+                                                    {post.image_urls && post.image_urls.length > 0 && (
+                                                        <div className="mt-4 grid grid-cols-2 gap-2">
+                                                            {post.image_urls.map((url, idx) => (
+                                                                <img key={idx} src={url} alt="Post attachment" className="rounded-lg max-h-64 object-cover" />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    {/* Edit/Delete Actions */}
-                                    {userId === post.author_id && !editingPostId && (
+                                    {userId === post.author_id && (
                                         <div className="flex gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(post)} className="h-8 w-8 text-gray-500 hover:text-blue-600">
-                                                <Pencil size={14} />
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(post)}>
+                                                <Pencil size={16} className="text-gray-500 hover:text-teal-600" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)} className="h-8 w-8 text-gray-500 hover:text-red-600">
-                                                <Trash2 size={14} />
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
+                                                <Trash2 size={16} className="text-gray-500 hover:text-red-600" />
                                             </Button>
                                         </div>
                                     )}
                                 </div>
-
-                                {editingPostId === post.id ? (
-                                    <div className="space-y-4">
-                                        <Textarea
-                                            value={editContent}
-                                            onChange={(e) => setEditContent(e.target.value)}
-                                            className="min-h-[100px]"
-                                        />
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
-                                                <X size={14} className="mr-1" /> Cancel
-                                            </Button>
-                                            <Button size="sm" onClick={() => handleUpdatePost(post.id)} className="bg-teal-600 hover:bg-teal-700 text-white">
-                                                <Save size={14} className="mr-1" /> Save
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                        <p className="whitespace-pre-wrap">{post.content}</p>
-                                        {post.image_urls && post.image_urls.length > 0 && (
-                                            <div className="mt-4 grid grid-cols-2 gap-2">
-                                                {post.image_urls.map((url, idx) => (
-                                                    <img key={idx} src={url} alt="Post attachment" className="rounded-lg max-h-64 object-cover" />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
                     ))}

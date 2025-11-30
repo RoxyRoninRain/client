@@ -137,10 +137,47 @@ export default function DirectoryPage() {
         return matchesSearch && matchesRegion;
     });
 
+    const [userProfile, setUserProfile] = useState<Member | null>(null);
+    const [checkingAccess, setCheckingAccess] = useState(true);
+
     // Get unique regions for filter based on active tab
     const regions = activeTab === 'akitas'
         ? Array.from(new Set(dogs.map(d => d.profiles?.region).filter(Boolean)))
         : Array.from(new Set(members.map(m => m.region).filter(Boolean)));
+
+    useEffect(() => {
+        checkAccess();
+    }, []);
+
+    async function checkAccess() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            setUserProfile(data);
+        }
+        setCheckingAccess(false);
+    }
+
+    if (checkingAccess) return <div className="p-8 text-center">Checking access...</div>;
+
+    if (!userProfile?.is_aca_member) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+                <Card className="max-w-md w-full text-center p-8">
+                    <div className="mx-auto w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mb-4">
+                        <ShieldCheck size={32} className="text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">Pro Feature</h2>
+                    <p className="text-gray-500 mb-6">
+                        The Directory is exclusive to ACA Members. Upgrade your account to access our network of preservationist breeders and owners.
+                    </p>
+                    <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                        Join ACA Today
+                    </Button>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">

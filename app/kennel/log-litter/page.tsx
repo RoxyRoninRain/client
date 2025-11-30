@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ShieldCheck } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 
 interface Dog {
@@ -30,19 +31,48 @@ export default function LogLitterPage() {
     const router = useRouter();
     const supabase = createClient();
 
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [checkingAccess, setCheckingAccess] = useState(true);
+
     useEffect(() => {
         async function fetchDogs() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
+                // Check Pro Status
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                setUserProfile(profile);
+
                 const { data } = await supabase
                     .from("dogs")
                     .select("id, call_name")
                     .eq("owner_id", user.id);
                 setMyDogs(data || []);
             }
+            setCheckingAccess(false);
         }
         fetchDogs();
     }, []);
+
+    if (checkingAccess) return <div className="p-8 text-center">Checking access...</div>;
+
+    if (!userProfile?.is_aca_member) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+                <Card className="max-w-md w-full text-center p-8">
+                    <div className="mx-auto w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mb-4">
+                        <ShieldCheck size={32} className="text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">Pro Feature</h2>
+                    <p className="text-gray-500 mb-6">
+                        Litter tracking is exclusive to ACA Members. Upgrade your account to unlock advanced kennel management tools.
+                    </p>
+                    <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                        Join ACA Today
+                    </Button>
+                </Card>
+            </div>
+        );
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
