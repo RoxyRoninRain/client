@@ -31,6 +31,10 @@ export async function createClient() {
                     }
                 },
             },
+            cookieOptions: {
+                sameSite: 'lax',
+                secure: true,
+            },
         }
     )
 }
