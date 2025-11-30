@@ -23,12 +23,13 @@ export default function ForgotPasswordPage() {
         setError(null);
         setMessage(null);
 
-        // Fallback to hardcoded production URL if env var is missing
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://client-cyan-beta.vercel.app';
-        console.log("Reset Password Redirect URL:", siteUrl); // Debug log
+        // Use the current window location to ensure the redirect matches the domain where the request was initiated.
+        // This is crucial for PKCE to work, as the cookie set by the client must match the domain of the redirect.
+        const origin = window.location.origin;
+        console.log("Reset Password Redirect URL:", origin); // Debug log
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${siteUrl}/auth/callback?next=/update-password`,
+            redirectTo: `${origin}/auth/callback?next=/update-password`,
         });
 
         if (error) {
