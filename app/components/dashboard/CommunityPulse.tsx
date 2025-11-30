@@ -92,7 +92,7 @@ export default function CommunityPulse() {
 
             <div className="flex flex-col md:grid md:grid-cols-2 gap-6 flex-1 min-h-0">
                 {/* Recent Discussions */}
-                <div className="flex flex-col h-1/2 md:h-full">
+                <div className="flex flex-col h-1/2 md:h-full min-h-0">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Recent Discussions</h3>
                         <Link href="/forums" className="text-xs text-teal-600 hover:underline">View All</Link>
@@ -117,7 +117,7 @@ export default function CommunityPulse() {
                 </div>
 
                 {/* New Users */}
-                <div className="flex flex-col h-1/2 md:h-full border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 pt-6 md:pt-0 md:pl-6">
+                <div className="flex flex-col h-1/2 md:h-full min-h-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 pt-6 md:pt-0 md:pl-6">
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">New Members</h3>
                     <div className="space-y-3 flex-1 overflow-y-auto">
                         {newMembers.length === 0 ? (
