@@ -3,37 +3,52 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, MapPin, Mail, Award, Plus, Baby } from "lucide-react";
+import { ShieldCheck, MapPin, Mail, Phone, Globe, Baby, Dog, Award, Edit2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import DogProfile from "@/components/DogProfile";
-import { InviteGenerator } from "@/components/InviteGenerator";
 
 interface Profile {
     id: string;
-    kennel_name: string;
     real_name: string;
+    kennel_name: string;
     region: string;
-    email: string;
-    is_aca_member: boolean;
+    bio: string;
+    cover_photo_url: string;
+    avatar_url: string;
+    contact_email: string;
+    contact_phone: string;
+    website: string;
+    preferred_contact_method: 'email' | 'phone' | 'website';
+    role: string;
     subscription_tier: string;
-    created_at: string;
+    is_aca_member: boolean;
 }
 
 interface Dog {
     id: string;
     call_name: string;
     registered_name: string;
-    breed: string; // Assuming 'breed' is a field or we default to Akita
     registration_number: string;
     image_url?: string;
     is_active_stud: boolean;
     is_available_puppy: boolean;
-    is_retired: boolean;
     health_records: {
         is_verified: boolean;
     }[];
+}
+
+interface Litter {
+    id: string;
+    whelp_date: string;
+    litter_name?: string;
+    puppy_count?: number;
+    sire_name?: string;
+    dam_name?: string;
+    sire?: { call_name: string } | null;
+    dam?: { call_name: string } | null;
 }
 
 export default function PublicProfilePage() {
@@ -42,92 +57,85 @@ export default function PublicProfilePage() {
 
     const [profile, setProfile] = useState<Profile | null>(null);
     const [dogs, setDogs] = useState<Dog[]>([]);
-    const [litters, setLitters] = useState<any[]>([]); // Using any for simplicity, should define interface
+    const [litters, setLitters] = useState<Litter[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
 
     const supabase = createClient();
 
     useEffect(() => {
-        async function init() {
+        async function loadData() {
+            setLoading(true);
             const { data: { user } } = await supabase.auth.getUser();
             setCurrentUser(user);
-            if (id) {
-                fetchProfileData(user);
+
+            if (!id) return;
+
+            // Fetch Profile
+            const { data: profileData, error } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (profileData) {
+                setProfile(profileData);
+            } else {
+                console.error("Error fetching profile:", error);
             }
+
+            // Fetch Dogs
+            const { data: dogsData } = await supabase
+                .from("dogs")
+                .select(`*, health_records (is_verified)`)
+                .eq("owner_id", id);
+
+            if (dogsData) setDogs(dogsData as any || []);
+
+            // Fetch Litters
+            const { data: littersData } = await supabase
+                .from("litters")
+                .select(`
+                    id, 
+                    whelp_date,
+                    litter_name,
+                    puppy_count,
+                    sire_name,
+                    dam_name,
+                    sire:dogs!sire_id(call_name),
+                    dam:dogs!dam_id(call_name)
+                `)
+                .eq("owner_id", id);
+
+            if (littersData) {
+                const formattedLitters = littersData.map((l: any) => ({
+                    ...l,
+                    sire: Array.isArray(l.sire) ? l.sire[0] : l.sire,
+                    dam: Array.isArray(l.dam) ? l.dam[0] : l.dam
+                }));
+                setLitters(formattedLitters);
+            }
+
+            setLoading(false);
         }
-        init();
+
+        loadData();
     }, [id]);
 
-    async function fetchProfileData(user: any) {
-        setLoading(true);
-
-        // 1. Fetch Profile
-        const { data: profileData, error: profileError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", id)
-            .single();
-
-        if (profileError) {
-            // Handle "No Rows" error (PGRST116)
-            if (profileError.code === 'PGRST116') {
-                if (user && user.id === id) {
-                    // Current user has no profile row -> Prompt to create one?
-                    // For now, we can just show a "Setup Profile" message or minimal fallback
-                    console.warn("Profile row missing for current user.");
-                    // Fallback object so the page renders for the owner
-                    setProfile({
-                        id: user.id,
-                        email: user.email,
-                        real_name: "New User",
-                        kennel_name: "My Kennel",
-                        region: "Unknown",
-                        is_aca_member: false,
-                        subscription_tier: "free",
-                        created_at: new Date().toISOString()
-                    });
-                } else {
-                    setError("Breeder not found.");
-                }
-            } else {
-                console.error("Error fetching profile:", JSON.stringify(profileError, null, 2));
-                setError("Error loading profile.");
-            }
-        } else {
-            setProfile(profileData);
-        }
-
-        // 2. Fetch Dogs
-        const { data: dogsData } = await supabase
-            .from("dogs")
-            .select(`*, health_records (is_verified)`)
-            .eq("owner_id", id);
-
-        setDogs(dogsData as any || []);
-
-        // 3. Fetch Litters
-        const { data: littersData } = await supabase
-            .from("litters")
-            .select(`
-                id, 
-                whelp_date,
-                sire:dogs!sire_id(call_name),
-                dam:dogs!dam_id(call_name)
-            `)
-            .eq("owner_id", id);
-
-        setLitters(littersData || []);
-
-        setLoading(false);
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
     }
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
-
-    // If we have an error and NO profile fallback, show error
-    if (error && !profile) return <div className="p-8 text-center text-red-500">{error}</div>;
-    if (!profile) return <div className="p-8 text-center text-red-500">Profile not found</div>;
+    if (!profile) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-8">
+                <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
+                <Link href="/directory">
+                    <Button>Back to Directory</Button>
+                </Link>
+            </div>
+        );
+    }
 
     const isOwner = currentUser && currentUser.id === profile.id;
     const studs = dogs.filter(d => d.is_active_stud);
@@ -135,157 +143,210 @@ export default function PublicProfilePage() {
     const others = dogs.filter(d => !d.is_active_stud && !d.is_available_puppy);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-            <div className="max-w-5xl mx-auto space-y-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
+            {/* Cover Photo */}
+            <div className="h-48 md:h-64 bg-gray-300 dark:bg-gray-800 relative">
+                {profile.cover_photo_url ? (
+                    <img src={profile.cover_photo_url} alt="Cover" className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <Dog size={48} />
+                    </div>
+                )}
+                <Link href="/directory" className="absolute top-4 left-4">
+                    <Button variant="secondary" size="sm" className="bg-white/90 hover:bg-white">
+                        <ArrowLeft size={16} className="mr-2" /> Back
+                    </Button>
+                </Link>
+            </div>
 
-                {/* Profile Header */}
-                <Card className="border-none shadow-md overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-blue-900 to-slate-900"></div>
-                    <CardContent className="relative pt-0 pb-8 px-8">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end -mt-12 mb-6 gap-4">
-                            <div>
-                                <div className="bg-white dark:bg-gray-800 p-2 rounded-xl shadow-lg inline-block mb-4">
-                                    <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center text-3xl">
-                                        🐕
-                                    </div>
-                                </div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    {profile.kennel_name || profile.real_name}
-                                    {profile.is_aca_member && (
-                                        <span title="ACA Member">
-                                            <ShieldCheck className="text-blue-600" size={24} />
-                                        </span>
-                                    )}
-                                </h1>
-                                <div className="flex items-center gap-2 text-gray-500 mt-1">
-                                    <MapPin size={16} />
-                                    <span>{profile.region || "Unknown Region"}</span>
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col gap-2">
-                                {isOwner ? (
-                                    <div className="flex gap-2">
-                                        <Button variant="outline" onClick={() => window.location.href = '/kennel/add-dog'}>
-                                            <Plus size={16} className="mr-2" /> Add Dog
-                                        </Button>
-                                        <Button variant="outline" onClick={() => window.location.href = '/kennel/log-litter'}>
-                                            <Plus size={16} className="mr-2" /> Log Litter
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <Button className="flex items-center gap-2" onClick={() => window.location.href = `mailto:${profile.email}`}>
-                                        <Mail size={16} /> Contact Breeder
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-4 items-center justify-between">
-                            <div className="flex gap-2">
-                                {profile.is_aca_member && <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">ACA Member</Badge>}
-                                {profile.subscription_tier === 'pro' && <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">Pro Breeder</Badge>}
-                            </div>
-
-                            {/* Invite Generator for Owner */}
-                            {isOwner && (
-                                <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border">
-                                    <span className="text-sm text-gray-500 font-medium">Invite Codes:</span>
-                                    <InviteGenerator userId={profile.id} />
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-16 relative z-10">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                        {/* Avatar */}
+                        <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 bg-gray-200 overflow-hidden flex-shrink-0 relative">
+                            {profile.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-bold">
+                                    {profile.real_name?.[0]}
                                 </div>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
 
-                {/* Litters Section */}
-                {litters.length > 0 && (
-                    <section>
-                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                            <Baby className="text-pink-500" /> Litters
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {litters.map(litter => (
-                                <Card key={litter.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-lg">Born {new Date(litter.whelp_date).toLocaleDateString()}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-600">
-                                            Sire: <span className="font-medium">{litter.sire?.call_name || "Unknown"}</span>
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            Dam: <span className="font-medium">{litter.dam?.call_name || "Unknown"}</span>
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                        {/* Profile Info */}
+                        <div className="flex-1 w-full">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                        {profile.kennel_name || profile.real_name}
+                                        {profile.is_aca_member && (
+                                            <span title="ACA Member">
+                                                <ShieldCheck className="text-blue-600" size={24} />
+                                            </span>
+                                        )}
+                                    </h1>
+                                    {profile.kennel_name && profile.real_name && (
+                                        <p className="text-gray-500 font-medium">{profile.real_name}</p>
+                                    )}
+                                    <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                        <MapPin size={14} /> {profile.region || "No region set"}
+                                    </div>
+
+                                    <div className="flex gap-2 mt-3">
+                                        {profile.is_aca_member && <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">ACA Member</Badge>}
+                                        {profile.subscription_tier === 'pro' && <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">Pro Breeder</Badge>}
+                                    </div>
+
+                                    <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl">
+                                        {profile.bio || "No bio added yet."}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-4 mt-4">
+                                        {profile.contact_email && (
+                                            <div className={`flex items-center gap-2 text-sm ${profile.preferred_contact_method === 'email' ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+                                                <Mail size={14} /> {profile.contact_email}
+                                            </div>
+                                        )}
+                                        {profile.contact_phone && (
+                                            <div className={`flex items-center gap-2 text-sm ${profile.preferred_contact_method === 'phone' ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+                                                <Phone size={14} /> {profile.contact_phone}
+                                            </div>
+                                        )}
+                                        {profile.website && (
+                                            <div className={`flex items-center gap-2 text-sm ${profile.preferred_contact_method === 'website' ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+                                                <Globe size={14} /> <a href={profile.website} target="_blank" rel="noopener noreferrer" className="hover:underline">Website</a>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-col gap-2 min-w-[140px]">
+                                    {isOwner ? (
+                                        <Link href="/profile">
+                                            <Button className="w-full">
+                                                <Edit2 size={16} className="mr-2" /> Manage Profile
+                                            </Button>
+                                        </Link>
+                                    ) : (
+                                        profile.contact_email && (
+                                            <Button className="w-full flex items-center gap-2" onClick={() => window.location.href = `mailto:${profile.contact_email}`}>
+                                                <Mail size={16} /> Contact Breeder
+                                            </Button>
+                                        )
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </section>
-                )}
+                    </div>
+                </div>
 
-                {/* Dogs Sections */}
-                <div className="space-y-8">
-                    {studs.length > 0 && (
-                        <section>
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <Award className="text-amber-500" /> Active Studs
+                {/* Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                    {/* Left Column: Dogs */}
+                    <div className={`${litters.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-8`}>
+
+                        {/* Active Studs */}
+                        {studs.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+                                    <Award className="text-amber-500" /> Active Studs
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {studs.map(dog => (
+                                        <DogProfile
+                                            key={dog.id}
+                                            name={dog.call_name}
+                                            breed="Akita"
+                                            is_verified={dog.health_records?.[0]?.is_verified || false}
+                                            owner_email={profile.contact_email || ""}
+                                            registration_number={dog.registration_number}
+                                            imageUrl={dog.image_url}
+                                        />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Available Puppies */}
+                        {puppies.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+                                    <Award className="text-green-500" /> Available Puppies
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {puppies.map(dog => (
+                                        <DogProfile
+                                            key={dog.id}
+                                            name={dog.call_name}
+                                            breed="Akita"
+                                            is_verified={dog.health_records?.[0]?.is_verified || false}
+                                            owner_email={profile.contact_email || ""}
+                                            registration_number={dog.registration_number}
+                                            imageUrl={dog.image_url}
+                                        />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Other Dogs */}
+                        {others.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+                                    <Dog className="text-teal-600" /> Our Dogs
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {others.map(dog => (
+                                        <DogProfile
+                                            key={dog.id}
+                                            name={dog.call_name}
+                                            breed="Akita"
+                                            is_verified={dog.health_records?.[0]?.is_verified || false}
+                                            owner_email={profile.contact_email || ""}
+                                            registration_number={dog.registration_number}
+                                            imageUrl={dog.image_url}
+                                        />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {dogs.length === 0 && (
+                            <Card className="bg-gray-50 border-dashed">
+                                <CardContent className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                    <Dog size={48} className="mb-4 opacity-20" />
+                                    <p>No dogs added yet.</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+
+                    {/* Right Column: Litters */}
+                    {litters.length > 0 && (
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-bold flex items-center gap-2">
+                                <Baby className="text-purple-600" /> Active Litters
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {studs.map(dog => (
-                                    <DogProfile
-                                        key={dog.id}
-                                        name={dog.call_name}
-                                        breed="Akita"
-                                        is_verified={dog.health_records?.[0]?.is_verified || false}
-                                        owner_email={profile.email}
-                                        registration_number={dog.registration_number}
-                                        imageUrl={dog.image_url}
-                                    />
+                            <div className="grid gap-4">
+                                {litters.map(litter => (
+                                    <Card key={litter.id} className="hover:shadow-md transition-shadow">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-lg">{litter.litter_name || "Unnamed Litter"}</CardTitle>
+                                            <p className="text-sm text-gray-500">Whelped: {new Date(litter.whelp_date).toLocaleDateString()}</p>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex flex-col gap-1 text-sm">
+                                                <p><span className="font-medium">Sire:</span> {litter.sire_name || litter.sire?.call_name || "Unknown"}</p>
+                                                <p><span className="font-medium">Dam:</span> {litter.dam_name || litter.dam?.call_name || "Unknown"}</p>
+                                                <p className="mt-2 font-medium text-purple-600">{litter.puppy_count} Puppies</p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                             </div>
-                        </section>
-                    )}
-
-                    {puppies.length > 0 && (
-                        <section>
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <Award className="text-green-500" /> Available Puppies
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {puppies.map(dog => (
-                                    <DogProfile
-                                        key={dog.id}
-                                        name={dog.call_name}
-                                        breed="Akita"
-                                        is_verified={dog.health_records?.[0]?.is_verified || false}
-                                        owner_email={profile.email}
-                                        registration_number={dog.registration_number}
-                                        imageUrl={dog.image_url}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {others.length > 0 && (
-                        <section>
-                            <h2 className="text-2xl font-bold mb-4 text-gray-500">Other Dogs</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-80">
-                                {others.map(dog => (
-                                    <DogProfile
-                                        key={dog.id}
-                                        name={dog.call_name}
-                                        breed="Akita"
-                                        is_verified={dog.health_records?.[0]?.is_verified || false}
-                                        owner_email={profile.email}
-                                        registration_number={dog.registration_number}
-                                        imageUrl={dog.image_url}
-                                    />
-                                ))}
-                            </div>
-                        </section>
+                        </div>
                     )}
                 </div>
             </div>

@@ -134,7 +134,9 @@ export default function AnnouncementsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</h2>
+                                            <Link href={`/announcements/${item.id}`} className="hover:underline">
+                                                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</h2>
+                                            </Link>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs text-gray-400 whitespace-nowrap">
                                                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
@@ -152,9 +154,11 @@ export default function AnnouncementsPage() {
                                             </div>
                                         </div>
 
-                                        <p className="text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
-                                            {item.summary}
-                                        </p>
+                                        <Link href={`/announcements/${item.id}`}>
+                                            <p className="text-gray-600 dark:text-gray-300 mt-2 leading-relaxed hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                                                {item.summary}
+                                            </p>
+                                        </Link>
 
                                         <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
                                             {item.event_date && (
