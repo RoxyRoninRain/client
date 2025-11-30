@@ -84,26 +84,26 @@ export default function CommunityPulse() {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-full flex flex-col min-h-[800px] md:min-h-0">
             <h2 className="text-xl font-bold font-serif text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-teal-600" />
                 Community Pulse
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-6 h-full">
                 {/* Recent Discussions */}
-                <div className="flex flex-col">
+                <div className="flex flex-col h-1/2 md:h-full">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Recent Discussions</h3>
                         <Link href="/forums" className="text-xs text-teal-600 hover:underline">View All</Link>
                     </div>
-                    <div className="space-y-3 flex-1">
+                    <div className="space-y-3 flex-1 overflow-y-auto">
                         {topics.length === 0 ? (
                             <p className="text-xs text-gray-400">No recent discussions.</p>
                         ) : (
                             topics.map((topic) => (
                                 <Link href={`/forums/${topic.id}`} key={topic.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                                    <MessageSquare size={16} className="mt-1 text-teal-500" />
+                                    <MessageSquare size={16} className="mt-1 text-teal-500 shrink-0" />
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{topic.title}</h4>
                                         <p className="text-xs text-gray-500 mt-1">
@@ -117,20 +117,20 @@ export default function CommunityPulse() {
                 </div>
 
                 {/* New Users */}
-                <div className="flex flex-col">
+                <div className="flex flex-col h-1/2 md:h-full border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 pt-6 md:pt-0 md:pl-6">
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">New Members</h3>
-                    <div className="space-y-3 flex-1">
+                    <div className="space-y-3 flex-1 overflow-y-auto">
                         {newMembers.length === 0 ? (
                             <p className="text-xs text-gray-400">No new members.</p>
                         ) : (
                             newMembers.map((user) => (
                                 <Link href={`/profile/${user.id}`} key={user.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 transition-colors">
-                                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">
+                                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold shrink-0">
                                         {(user.real_name || user.kennel_name || "?").substring(0, 2).toUpperCase()}
                                     </div>
-                                    <div>
-                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.real_name || user.kennel_name}</h4>
-                                        <p className="text-xs text-gray-500">{user.region || "Unknown Location"}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user.real_name || user.kennel_name}</h4>
+                                        <p className="text-xs text-gray-500 truncate">{user.region || "Unknown Location"}</p>
                                     </div>
                                 </Link>
                             ))

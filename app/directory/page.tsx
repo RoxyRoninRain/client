@@ -5,17 +5,15 @@ import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dog as DogIcon, Users, Search, ShieldCheck, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, ShieldCheck, Users, Dog as DogIcon, MapPin } from "lucide-react";
 import Link from "next/link";
 import ProUpgradeCard from "@/components/ProUpgradeCard";
-
 interface Dog {
     id: string;
     call_name: string;
     registered_name: string;
-    breed: string;
     owner_id: string;
     is_active_stud: boolean;
     is_available_puppy: boolean;

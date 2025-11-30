@@ -15,8 +15,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Akita Connect",
-  description: "The premier platform for Akita owners and breeders.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://akita-connect-new.vercel.app"),
+  title: {
+    default: "Akita Connect - The Premier Community for Akita Owners",
+    template: "%s | Akita Connect",
+  },
+  description: "Join the largest community of Akita owners, breeders, and enthusiasts. Find puppies, discuss health, and connect with others.",
+  keywords: ["Akita", "Japanese Akita", "American Akita", "Dog Community", "Puppies", "Breeder Directory"],
+  authors: [{ name: "Akita Connect Team" }],
+  openGraph: {
+    title: "Akita Connect - The Premier Community for Akita Owners",
+    description: "Join the largest community of Akita owners, breeders, and enthusiasts.",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://akita-connect-new.vercel.app",
+    siteName: "Akita Connect",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Akita Connect",
+    description: "The premier platform for Akita owners and breeders.",
+  },
 };
 
 import { createClient } from "@/utils/supabase/server";

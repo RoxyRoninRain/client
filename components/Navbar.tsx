@@ -13,6 +13,7 @@ export default function Navbar({ user }: { user: User | null }) {
     const [userId, setUserId] = useState<string | null>(user?.id || null);
     const [userRole, setUserRole] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
     const pathname = usePathname();
     const supabase = createClient();
     const router = useRouter();
@@ -31,6 +32,7 @@ export default function Navbar({ user }: { user: User | null }) {
                 if (profile) {
                     setUserRole(profile.role);
                 }
+                setLoading(false);
             }
             getRole();
         } else {
@@ -48,6 +50,7 @@ export default function Navbar({ user }: { user: User | null }) {
                         setUserRole(profile.role);
                     }
                 }
+                setLoading(false);
             }
             getUser();
         }
@@ -65,9 +68,9 @@ export default function Navbar({ user }: { user: User | null }) {
 
     // Hide Navbar on Landing Page (root path and not logged in)
     // We wait for the user check to complete (or default to hidden on root to avoid flash)
-    if (pathname === "/" && !userId) {
-        return null;
-    }
+    // if (pathname === "/" && !userId && !loading) {
+    //     return null;
+    // }
 
     return (
         <nav className="bg-[#0f172a] border-b border-gray-800 sticky top-0 z-50">
@@ -151,10 +154,13 @@ export default function Navbar({ user }: { user: User | null }) {
                             </button>
                         )}
 
-                        {/* Mobile Menu Trigger */}
+                    </div>
+
+                    {/* Mobile Menu Trigger */}
+                    <div className="flex items-center sm:hidden">
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="sm:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors"
+                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors"
                         >
                             <Menu size={20} />
                         </button>

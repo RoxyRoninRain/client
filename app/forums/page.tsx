@@ -2,24 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { MessageSquare, Plus, User, HeartPulse, Brain, Trophy, Baby } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Topic {
-    id: string;
-    title: string;
-    author_id: string;
-    created_at: string;
-    author?: {
-        kennel_name: string;
-        real_name: string;
-    };
-    post_count?: number;
-}
-
-export default function ForumsPage() {
+import { HeartPulse, Brain, Trophy, Baby, MessageSquare } from "lucide-react"; export default function ForumsPage() {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
