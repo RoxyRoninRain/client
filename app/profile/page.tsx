@@ -296,8 +296,10 @@ export default function ProfilePage() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.kennel_name || profile.real_name}</h1>
-                                        <p className="text-gray-500 font-medium">{profile.real_name}</p>
+                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.real_name}</h1>
+                                        {profile.kennel_name && (
+                                            <p className="text-gray-500 font-medium">{profile.kennel_name}</p>
+                                        )}
                                         <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                                             <MapPin size={14} /> {profile.region || "No region set"}
                                         </div>

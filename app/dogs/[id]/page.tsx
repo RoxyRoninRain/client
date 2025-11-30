@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -8,7 +10,7 @@ import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dog, Activity, Trophy, Image as ImageIcon, Plus, X, Edit2, Trash2, Save } from "lucide-react";
+import { Dog, Activity, Trophy, Image as ImageIcon, Plus, X, Edit2, Trash2, Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface Dog {
@@ -158,17 +160,12 @@ export default function DogPage() {
 
     const isOwner = currentUser && currentUser.id === dog.owner_id;
 
-    // Debugging
-    console.log("Current User:", currentUser?.id);
-    console.log("Dog Owner:", dog.owner_id);
-    console.log("Is Owner:", isOwner);
-
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
             <div className="max-w-5xl mx-auto space-y-8">
                 <div className="flex items-center justify-between">
                     <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                        &larr; Back
+                        <ArrowLeft size={16} /> Back
                     </Button>
                 </div>
 

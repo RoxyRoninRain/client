@@ -31,16 +31,12 @@ export default function SignupPage() {
             return;
         }
 
-        // 1. Validate Invite Code via Backend
+        // 1. Validate Invite Code via Backend (RPC)
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/validate-invite`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ inviteCode })
-            });
-            const validation = await res.json();
+            const { data: ownerId, error: rpcError } = await supabase.rpc('lookup_invite_owner', { code: inviteCode });
 
-            if (!validation.valid) {
+            if (rpcError || !ownerId) {
+                console.error("Validation error:", rpcError);
                 setError("Invalid invite code. Please request one from an ACA member.");
                 setLoading(false);
                 return;

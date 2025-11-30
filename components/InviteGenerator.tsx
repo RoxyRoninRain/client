@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
+import { createClient } from "@/utils/supabase/client";
+
 export function InviteGenerator({ userId }: { userId: Promise<string | undefined> | string | undefined }) {
     const [code, setCode] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
 
     async function generateCode() {
         setLoading(true);
@@ -14,24 +17,13 @@ export function InviteGenerator({ userId }: { userId: Promise<string | undefined
         setCode(null);
 
         try {
-            // Resolve userId if it's a promise (hacky fix for the prop passing above)
-            const resolvedId = await userId;
+            const { data, error } = await supabase.rpc('generate_invite_code');
 
-            if (!resolvedId) {
-                setError("User ID missing");
-                setLoading(false);
-                return;
+            if (error) {
+                throw new Error(error.message);
             }
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/generate-invite`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: resolvedId })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
+            if (!data.success) {
                 throw new Error(data.error || 'Failed to generate code');
             }
 
