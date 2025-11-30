@@ -239,7 +239,7 @@ export default function ProfilePage() {
 
                         {/* Profile Info / Edit Form */}
                         <div className="flex-1 w-full">
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                 {isEditing ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                         <div className="space-y-2">
