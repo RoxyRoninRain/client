@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function AuthCodeErrorPage({
+export default async function AuthCodeErrorPage({
     searchParams,
 }: {
-    searchParams: { error?: string; description?: string };
+    searchParams: Promise<{ error?: string; description?: string }>;
 }) {
-    const error = searchParams?.error || "Unknown Error";
-    const description = searchParams?.description || "There was a problem verifying your identity.";
+    const params = await searchParams;
+    const error = params?.error || "Unknown Error";
+    const description = params?.description || "There was a problem verifying your identity.";
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
