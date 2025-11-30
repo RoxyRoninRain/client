@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, MessageSquare, Send, User, Pin, Lock, Pencil, Trash2, X, Save } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, User, Pin, Lock, Pencil, Trash2, X, Save, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +51,7 @@ export default function TopicPage() {
     // Edit State
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState("");
+
     useEffect(() => {
         async function loadData() {
             if (!id) return;
@@ -202,6 +203,19 @@ export default function TopicPage() {
         }
     };
 
+    const handleQuote = (post: Post) => {
+        const authorName = post.author?.real_name || post.author?.kennel_name || "Unknown";
+        const quoteText = `> **${authorName}** wrote:\n> ${post.content}\n\n`;
+        setNewReply(prev => prev + quoteText);
+
+        // Scroll to reply box
+        const replyBox = document.querySelector('textarea[placeholder="Write your reply here..."]');
+        if (replyBox) {
+            replyBox.scrollIntoView({ behavior: 'smooth' });
+            (replyBox as HTMLTextAreaElement).focus();
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading discussion...</div>;
 
     if (!topic) {
@@ -284,16 +298,21 @@ export default function TopicPage() {
                                             )}
                                         </div>
                                     </div>
-                                    {userId === post.author_id && (
-                                        <div className="flex gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(post)}>
-                                                <Pencil size={16} className="text-gray-500 hover:text-teal-600" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
-                                                <Trash2 size={16} className="text-gray-500 hover:text-red-600" />
-                                            </Button>
-                                        </div>
-                                    )}
+                                    <div className="flex gap-2">
+                                        <Button variant="ghost" size="icon" onClick={() => handleQuote(post)} title="Quote this post">
+                                            <Quote size={16} className="text-gray-500 hover:text-teal-600" />
+                                        </Button>
+                                        {userId === post.author_id && (
+                                            <>
+                                                <Button variant="ghost" size="icon" onClick={() => handleEditClick(post)}>
+                                                    <Pencil size={16} className="text-gray-500 hover:text-teal-600" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
+                                                    <Trash2 size={16} className="text-gray-500 hover:text-red-600" />
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
