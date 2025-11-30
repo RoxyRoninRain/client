@@ -9,6 +9,7 @@ interface Topic {
     title: string;
     created_at: string;
     profiles: {
+        id: string;
         real_name: string;
         kennel_name: string;
     };
@@ -39,6 +40,7 @@ export default function CommunityPulse() {
                     title,
                     created_at,
                     profiles (
+                        id,
                         real_name,
                         kennel_name
                     )
@@ -107,7 +109,7 @@ export default function CommunityPulse() {
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{topic.title}</h4>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            by {topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"} • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
+                                            by <Link href={topic.profiles ? `/profile/${topic.profiles.id}` : '#'} className="hover:text-teal-600 hover:underline">{topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"}</Link> • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
                                         </p>
                                     </div>
                                 </Link>

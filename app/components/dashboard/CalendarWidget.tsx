@@ -99,8 +99,8 @@ export default function CalendarWidget() {
                             key={day}
                             onClick={() => handleDayClick(day)}
                             className={`h-8 flex flex-col items-center justify-center relative rounded-lg transition-colors ${isSelected ? 'bg-teal-600 text-white shadow-md' :
-                                    hasEvent ? 'bg-gray-50 dark:bg-gray-700/50 font-bold text-gray-900 dark:text-white hover:bg-teal-50 dark:hover:bg-teal-900/20' :
-                                        'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/30'
+                                hasEvent ? 'bg-gray-50 dark:bg-gray-700/50 font-bold text-gray-900 dark:text-white hover:bg-teal-50 dark:hover:bg-teal-900/20' :
+                                    'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/30'
                                 }`}
                         >
                             <span className="text-xs">{day}</span>
@@ -108,9 +108,9 @@ export default function CalendarWidget() {
                                 <div className="flex gap-0.5 mt-0.5">
                                     {dayEvents.map((e, i) => (
                                         <div key={i} className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' :
-                                                e.type === 'alert' ? 'bg-red-500' :
-                                                    e.type === 'info' ? 'bg-blue-500' :
-                                                        'bg-teal-500'
+                                            e.type === 'alert' ? 'bg-red-500' :
+                                                e.type === 'info' ? 'bg-blue-500' :
+                                                    'bg-teal-500'
                                             }`} />
                                     ))}
                                 </div>
@@ -135,7 +135,7 @@ export default function CalendarWidget() {
                                 Clear
                             </button>
                         )}
-                        <Link href="/events/new" className="text-xs text-teal-600 hover:text-teal-700 font-medium">
+                        <Link href="/announcements/create" className="text-xs text-teal-600 hover:text-teal-700 font-medium">
                             + Add Event
                         </Link>
                     </div>
