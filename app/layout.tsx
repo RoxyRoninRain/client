@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://akita-connect-new.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.akitaconnect.com"),
   title: {
     default: "Akita Connect - The Premier Community for Akita Owners",
     template: "%s | Akita Connect",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Akita Connect - The Premier Community for Akita Owners",
     description: "Join the largest community of Akita owners, breeders, and enthusiasts.",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://akita-connect-new.vercel.app",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.akitaconnect.com",
     siteName: "Akita Connect",
     locale: "en_US",
     type: "website",

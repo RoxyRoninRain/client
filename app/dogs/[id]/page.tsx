@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import CoOwnerManager from "@/components/CoOwnerManager";
+
 import DogProfile from "@/app/components/DogProfile";
 import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,8 @@ export default function DogPage() {
     const [wins, setWins] = useState<any[]>([]);
     const [gallery, setGallery] = useState<any[]>([]);
 
+    const [isOwner, setIsOwner] = useState(false);
+
     useEffect(() => {
         async function fetchDogData() {
             if (!params.id) return;
@@ -79,9 +83,28 @@ export default function DogPage() {
             } else {
                 setDog(dogData as any);
                 setEditForm(dogData as any);
+
+                // Check Ownership
+                if (user) {
+                    // Check if primary owner
+                    if (dogData.owner_id === user.id) {
+                        setIsOwner(true);
+                    } else {
+                        // Check if co-owner
+                        const { data: coOwner } = await supabase
+                            .from("dog_owners")
+                            .select("user_id")
+                            .eq("dog_id", params.id)
+                            .eq("user_id", user.id)
+                            .single();
+
+                        if (coOwner) setIsOwner(true);
+                    }
+                }
             }
 
-            // Fetch Related Data
+            // ... fetch related data
+
             const { data: healthData } = await supabase.from("dog_health").select("*").eq("dog_id", params.id);
             if (healthData) setHealthRecords(healthData);
 
@@ -156,7 +179,7 @@ export default function DogPage() {
         return <div className="min-h-screen flex items-center justify-center text-red-500">{error || "Dog not found."}</div>;
     }
 
-    const isOwner = currentUser && currentUser.id === dog.owner_id;
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
@@ -212,6 +235,11 @@ export default function DogPage() {
                             <Button onClick={handleUpdateDog} disabled={saving}>
                                 {saving ? "Saving..." : "Save Changes"}
                             </Button>
+                        </div>
+
+                        {/* Co-Owner Management */}
+                        <div className="border-t pt-6 mt-6">
+                            <CoOwnerManager dogId={dog.id} currentUserId={currentUser.id} />
                         </div>
                     </div>
                 ) : (

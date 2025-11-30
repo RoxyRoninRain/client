@@ -156,13 +156,24 @@ export default function Navbar({ user }: { user: User | null }) {
 
                     </div>
 
-                    {/* Mobile Menu Trigger */}
-                    <div className="flex items-center sm:hidden">
+                    {/* Mobile Actions & Menu Trigger */}
+                    <div className="flex items-center gap-3 sm:hidden ml-auto">
+                        <Link href="/notifications" className="p-2 text-white hover:bg-gray-800 rounded-full transition-colors relative">
+                            <Bell size={20} />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0f172a]"></span>
+                        </Link>
+
+                        <Link href={userId ? `/profile` : "/login"} className="p-1 text-white hover:bg-gray-800 rounded-full transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600">
+                                <UserCircle size={24} className="text-gray-300" />
+                            </div>
+                        </Link>
+
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors"
+                            className="p-2 text-white hover:bg-gray-800 rounded-full transition-colors"
                         >
-                            <Menu size={20} />
+                            <Menu size={24} />
                         </button>
                     </div>
                 </div>
