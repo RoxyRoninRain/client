@@ -17,6 +17,7 @@ export default function SignupPage() {
     const [inviteCode, setInviteCode] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
     const router = useRouter();
     const supabase = createClient();
 
@@ -65,6 +66,7 @@ export default function SignupPage() {
                 data: {
                     invite_code: inviteCode,
                 },
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
             },
         });
 
@@ -72,10 +74,39 @@ export default function SignupPage() {
             setError(signUpError.message);
             setLoading(false);
         } else {
-            router.push("/");
-            router.refresh();
+            setSuccess(true);
         }
     };
+
+    if (success) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+                <Card className="w-full max-w-md text-center">
+                    <CardHeader>
+                        <CardTitle className="text-2xl text-green-600">Check Your Email</CardTitle>
+                        <CardDescription>
+                            We've sent a confirmation link to <strong>{email}</strong>.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-gray-600">
+                            Please check your inbox (and spam folder) and click the link to activate your account.
+                        </p>
+                        <Alert>
+                            <AlertDescription>
+                                Once confirmed, you can sign in to access Akita Connect.
+                            </AlertDescription>
+                        </Alert>
+                    </CardContent>
+                    <CardFooter className="flex justify-center">
+                        <Link href="/login">
+                            <Button variant="outline">Go to Login</Button>
+                        </Link>
+                    </CardFooter>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
