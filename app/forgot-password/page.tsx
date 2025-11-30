@@ -23,7 +23,10 @@ export default function ForgotPasswordPage() {
         setError(null);
         setMessage(null);
 
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        // Fallback to hardcoded production URL if env var is missing
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://client-cyan-beta.vercel.app';
+        console.log("Reset Password Redirect URL:", siteUrl); // Debug log
+
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${siteUrl}/auth/callback?next=/update-password`,
         });
