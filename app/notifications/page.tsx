@@ -4,10 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell } from "lucide-react";
 
 export default function NotificationsPage() {
-    const notifications = [
-        { id: 1, title: "Welcome to Akita Connect!", message: "We're glad you're here. Complete your profile to get started.", date: "Just now", read: false },
-        // Placeholder data
-    ];
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const supabase = createClient();
+
+    useEffect(() => {
+        async function fetchNotifications() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+            } else {
+                setNotifications(data || []);
+            }
+            setLoading(false);
+        }
+
+        fetchNotifications();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
@@ -19,7 +41,9 @@ export default function NotificationsPage() {
                 </header>
 
                 <div className="space-y-4">
-                    {notifications.length === 0 ? (
+                    {loading ? (
+                        <p className="text-center text-gray-500">Loading...</p>
+                    ) : notifications.length === 0 ? (
                         <Card>
                             <CardContent className="p-8 text-center text-gray-500">
                                 No new notifications.
@@ -31,11 +55,16 @@ export default function NotificationsPage() {
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
                                         <CardTitle className="text-lg font-semibold">{notification.title}</CardTitle>
-                                        <span className="text-xs text-gray-500">{notification.date}</span>
+                                        <span className="text-xs text-gray-500">{new Date(notification.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-gray-600 dark:text-gray-300">{notification.message}</p>
+                                    {notification.link && (
+                                        <a href={notification.link} className="text-sm text-teal-600 hover:underline mt-2 inline-block">
+                                            View Details
+                                        </a>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))

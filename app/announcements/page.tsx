@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, AlertTriangle, Info, Plus, Calendar } from "lucide-react";
+import { Bell, AlertTriangle, Info, Plus, Calendar, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Announcement {
@@ -68,7 +68,28 @@ export default function AnnouncementsPage() {
         fetchData();
     }, []);
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this announcement?")) return;
+
+        const { error } = await supabase.from('announcements').delete().eq('id', id);
+        if (error) {
+            alert("Error deleting announcement: " + error.message);
+        } else {
+            setAnnouncements(announcements.filter(a => a.id !== id));
+        }
+    };
+
     const canCreate = userRole === 'authorized';
+
+    const filteredAnnouncements = announcements.filter(item => {
+        if (item.is_event && item.event_date) {
+            const eventDate = new Date(item.event_date);
+            const oneDayAfter = new Date(eventDate);
+            oneDayAfter.setDate(oneDayAfter.getDate() + 1);
+            return new Date() < oneDayAfter;
+        }
+        return true;
+    });
 
     if (loading) {
         return <div className="p-8 text-center">Loading announcements...</div>;
@@ -92,18 +113,18 @@ export default function AnnouncementsPage() {
                 </div>
 
                 <div className="space-y-4">
-                    {announcements.length === 0 ? (
+                    {filteredAnnouncements.length === 0 ? (
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center shadow-sm">
                             <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                            <p className="text-gray-500">No announcements yet.</p>
+                            <p className="text-gray-500">No active announcements.</p>
                         </div>
                     ) : (
-                        announcements.map((item) => (
+                        filteredAnnouncements.map((item) => (
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-all hover:shadow-md">
                                 <div className="flex items-start gap-4">
                                     <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.type === 'alert' ? 'bg-red-100 text-red-600' :
-                                        item.type === 'info' ? 'bg-blue-100 text-blue-600' :
-                                            'bg-teal-100 text-teal-600'
+                                            item.type === 'info' ? 'bg-blue-100 text-blue-600' :
+                                                'bg-teal-100 text-teal-600'
                                         }`}>
                                         {item.type === 'alert' ? <AlertTriangle size={20} /> :
                                             item.type === 'info' ? <Info size={20} /> :
@@ -112,9 +133,21 @@ export default function AnnouncementsPage() {
                                     <div className="flex-1">
                                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                             <h2 className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</h2>
-                                            <span className="text-xs text-gray-400 whitespace-nowrap">
-                                                {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                                                </span>
+                                                {canCreate && (
+                                                    <div className="flex gap-1 ml-2">
+                                                        <Link href={`/announcements/edit/${item.id}`} className="text-gray-400 hover:text-blue-600" title="Edit">
+                                                            <Edit size={14} />
+                                                        </Link>
+                                                        <button onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-600" title="Delete">
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <p className="text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
