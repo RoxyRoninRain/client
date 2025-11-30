@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -8,6 +9,23 @@ export async function GET(request: Request) {
 
     if (code) {
         const supabase = await createClient();
+
+        // DEBUG: Log details for PKCE investigation
+        const cookieStore = await cookies();
+        const allCookies = cookieStore.getAll();
+        console.log("--- AUTH CALLBACK DEBUG ---");
+        console.log("Request URL:", request.url);
+        console.log("Origin:", origin);
+        console.log("Code Present:", !!code);
+        console.log("Cookies Received:", allCookies.map(c => c.name).join(", "));
+        const verifierCookie = allCookies.find(c => c.name.includes("code-verifier"));
+        if (verifierCookie) {
+            console.log("Verifier Cookie Found:", verifierCookie.name, "Value (truncated):", verifierCookie.value.substring(0, 10) + "...");
+        } else {
+            console.log("CRITICAL: No code-verifier cookie found!");
+        }
+        console.log("---------------------------");
+
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
             const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
