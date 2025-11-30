@@ -54,7 +54,7 @@ export default function Home() {
             <AnnouncementsCard />
           </div>
 
-          <div className="md:col-span-8 h-auto md:h-[400px]">
+          <div className="md:col-span-8 h-[500px] md:h-[400px]">
             <CommunityPulse />
           </div>
 

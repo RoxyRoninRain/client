@@ -84,13 +84,13 @@ export default function CommunityPulse() {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-full flex flex-col min-h-[800px] md:min-h-0">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-full flex flex-col">
             <h2 className="text-xl font-bold font-serif text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-teal-600" />
                 Community Pulse
             </h2>
 
-            <div className="flex flex-col md:grid md:grid-cols-2 gap-6 h-full">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-6 flex-1 min-h-0">
                 {/* Recent Discussions */}
                 <div className="flex flex-col h-1/2 md:h-full">
                     <div className="flex justify-between items-center mb-3">
