@@ -44,7 +44,7 @@ export default function CommunityPulse() {
                     )
                 `)
                 .order('created_at', { ascending: false })
-                .limit(3);
+                .limit(20);
 
             if (topicsData) setTopics(topicsData as any);
 

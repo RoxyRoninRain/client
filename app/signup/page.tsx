@@ -66,7 +66,7 @@ export default function SignupPage() {
                 data: {
                     invite_code: inviteCode,
                 },
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
+                emailRedirectTo: `${window.location.origin}/auth/callback?next=/profile`,
             },
         });
 
