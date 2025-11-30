@@ -20,11 +20,14 @@ export async function GET(request: Request) {
             } else {
                 return NextResponse.redirect(`${origin}${next}`);
             }
+        } else {
+            console.error("Auth error:", error);
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${error.code}&description=${encodeURIComponent(error.message)}`);
         }
     }
 
     // return the user to an error page with instructions
     const errorCode = "AuthExchangeError";
-    const errorDescription = "Failed to exchange code for session.";
+    const errorDescription = "No code provided.";
     return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${errorCode}&description=${encodeURIComponent(errorDescription)}`);
 }
