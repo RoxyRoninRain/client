@@ -13,7 +13,9 @@ interface Announcement {
     summary: string;
     type: 'alert' | 'info' | 'notification';
     created_at: string;
+    is_event?: boolean;
     event_date?: string;
+    location?: string;
     creator_id?: string;
     profiles?: {
         real_name: string;
@@ -123,8 +125,8 @@ export default function AnnouncementsPage() {
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-all hover:shadow-md">
                                 <div className="flex items-start gap-4">
                                     <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${item.type === 'alert' ? 'bg-red-100 text-red-600' :
-                                            item.type === 'info' ? 'bg-blue-100 text-blue-600' :
-                                                'bg-teal-100 text-teal-600'
+                                        item.type === 'info' ? 'bg-blue-100 text-blue-600' :
+                                            'bg-teal-100 text-teal-600'
                                         }`}>
                                         {item.type === 'alert' ? <AlertTriangle size={20} /> :
                                             item.type === 'info' ? <Info size={20} /> :

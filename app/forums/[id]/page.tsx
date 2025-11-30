@@ -247,7 +247,7 @@ export default function TopicPage() {
                         </CardTitle>
                         <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
                             <User size={14} />
-                            <span>Started by <span className="font-medium text-gray-700 dark:text-gray-300">{topic.author?.real_name || topic.author?.kennel_name}</span></span>
+                            <span>Started by <Link href={topic.author_id ? `/profile/${topic.author_id}` : '#'} className="font-medium text-gray-700 dark:text-gray-300 hover:text-teal-600 hover:underline">{topic.author?.real_name || topic.author?.kennel_name}</Link></span>
                             <span className="mx-2">•</span>
                             <span>{new Date(topic.created_at).toLocaleDateString()}</span>
                         </div>
@@ -265,7 +265,9 @@ export default function TopicPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">
-                                                {post.author?.real_name || post.author?.kennel_name}
+                                                <Link href={post.author_id ? `/profile/${post.author_id}` : '#'} className="hover:text-teal-600 hover:underline">
+                                                    {post.author?.real_name || post.author?.kennel_name}
+                                                </Link>
                                             </p>
 
                                             {editingPostId === post.id ? (

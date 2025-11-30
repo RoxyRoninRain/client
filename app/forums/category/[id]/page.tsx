@@ -129,9 +129,9 @@ export default function CategoryPage() {
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <User size={14} />
                                             <span>
-                                                Posted by <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                Posted by <Link href={topic.author_id ? `/profile/${topic.author_id}` : '#'} className="font-medium text-gray-700 dark:text-gray-300 hover:text-teal-600 hover:underline">
                                                     {topic.author?.real_name || topic.author?.kennel_name || "Unknown"}
-                                                </span>
+                                                </Link>
                                             </span>
                                         </div>
                                     </CardContent>
