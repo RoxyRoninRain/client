@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, ShieldCheck, Users, Dog as DogIcon, MapPin } from "lucide-react";
 import Link from "next/link";
+import ProUpgradeCard from "@/components/ProUpgradeCard";
 
 interface Dog {
     id: string;
@@ -37,6 +38,7 @@ interface Member {
     region: string;
     avatar_url: string;
     is_aca_member: boolean;
+    role?: string;
     bio: string;
 }
 
@@ -160,23 +162,8 @@ export default function DirectoryPage() {
 
     if (checkingAccess) return <div className="p-8 text-center">Checking access...</div>;
 
-    if (!userProfile?.is_aca_member) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-                <Card className="max-w-md w-full text-center p-8">
-                    <div className="mx-auto w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mb-4">
-                        <ShieldCheck size={32} className="text-teal-600 dark:text-teal-400" />
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">Pro Feature</h2>
-                    <p className="text-gray-500 mb-6">
-                        The Directory is exclusive to ACA Members. Upgrade your account to access our network of preservationist breeders and owners.
-                    </p>
-                    <Button className="w-full bg-teal-600 hover:bg-teal-700" asChild>
-                        <a href="mailto:support@akitaconnect.com?subject=Upgrade to ACA Member">Join ACA Today</a>
-                    </Button>
-                </Card>
-            </div>
-        );
+    if (!userProfile?.is_aca_member && userProfile?.role !== 'admin') {
+        return <ProUpgradeCard />;
     }
 
     return (

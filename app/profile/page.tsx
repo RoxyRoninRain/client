@@ -341,6 +341,37 @@ export default function ProfilePage() {
                                         </Button>
                                     )}
                                     <InviteGenerator userId={profile.id} />
+
+                                    {isEditing && (
+                                        <div className="pt-4 border-t mt-4">
+                                            <h3 className="text-sm font-semibold text-red-600 mb-2">Danger Zone</h3>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="w-full"
+                                                onClick={() => {
+                                                    if (confirm("Are you sure you want to delete your account? This action cannot be undone and will delete all your data.")) {
+                                                        // Call delete API
+                                                        fetch('/api/auth/delete-account', { method: 'DELETE' })
+                                                            .then(async (res) => {
+                                                                if (res.ok) {
+                                                                    await supabase.auth.signOut();
+                                                                    router.push('/');
+                                                                } else {
+                                                                    alert("Failed to delete account. Please try again.");
+                                                                }
+                                                            })
+                                                            .catch(err => {
+                                                                console.error("Error deleting account:", err);
+                                                                alert("An error occurred.");
+                                                            });
+                                                    }
+                                                }}
+                                            >
+                                                Delete Account
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ShieldCheck } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import ProUpgradeCard from "@/components/ProUpgradeCard";
 
 export default function AddDogPage() {
     const [formData, setFormData] = useState({
@@ -31,12 +31,14 @@ export default function AddDogPage() {
 
     const [checkingAccess, setCheckingAccess] = useState(true);
     const [limitReached, setLimitReached] = useState(false);
+    const [userProfile, setUserProfile] = useState<any>(null);
 
     useEffect(() => {
         async function checkLimit() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data: profile } = await supabase.from('profiles').select('is_aca_member').eq('id', user.id).single();
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                setUserProfile(profile);
 
                 if (!profile?.is_aca_member) {
                     const { count } = await supabase
@@ -55,30 +57,6 @@ export default function AddDogPage() {
         }
         checkLimit();
     }, []);
-
-    if (checkingAccess) return <div className="p-8 text-center">Checking limits...</div>;
-
-    if (limitReached) {
-        return (
-            <div className="max-w-2xl mx-auto p-6">
-                <Card className="text-center p-8 border-l-4 border-l-yellow-500">
-                    <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mb-4">
-                        <ShieldCheck size={32} className="text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">Kennel Limit Reached</h2>
-                    <p className="text-gray-500 mb-6">
-                        Free accounts are limited to 3 active dogs. Upgrade to Pro (ACA Member) for unlimited dogs and advanced features.
-                    </p>
-                    <div className="flex gap-4 justify-center">
-                        <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
-                        <Button className="bg-teal-600 hover:bg-teal-700" asChild>
-                            <a href="mailto:support@akitaconnect.com?subject=Upgrade to ACA Member">Join ACA Today</a>
-                        </Button>
-                    </div>
-                </Card>
-            </div>
-        );
-    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -116,6 +94,12 @@ export default function AddDogPage() {
             router.refresh();
         }
     };
+
+    if (checkingAccess) return <div className="p-8 text-center">Checking limits...</div>;
+
+    if (limitReached && userProfile?.role !== 'admin') {
+        return <ProUpgradeCard />;
+    }
 
     return (
         <div className="max-w-2xl mx-auto p-6">

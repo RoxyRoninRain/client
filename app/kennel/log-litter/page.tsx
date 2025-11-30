@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShieldCheck } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import ProUpgradeCard from "@/components/ProUpgradeCard";
 
 interface Dog {
     id: string;
@@ -55,23 +56,8 @@ export default function LogLitterPage() {
 
     if (checkingAccess) return <div className="p-8 text-center">Checking access...</div>;
 
-    if (!userProfile?.is_aca_member) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-                <Card className="max-w-md w-full text-center p-8">
-                    <div className="mx-auto w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mb-4">
-                        <ShieldCheck size={32} className="text-teal-600 dark:text-teal-400" />
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">Pro Feature</h2>
-                    <p className="text-gray-500 mb-6">
-                        Litter tracking is exclusive to ACA Members. Upgrade your account to unlock advanced kennel management tools.
-                    </p>
-                    <Button className="w-full bg-teal-600 hover:bg-teal-700" asChild>
-                        <a href="mailto:support@akitaconnect.com?subject=Upgrade to ACA Member">Join ACA Today</a>
-                    </Button>
-                </Card>
-            </div>
-        );
+    if (!userProfile?.is_aca_member && userProfile?.role !== 'admin') {
+        return <ProUpgradeCard />;
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
