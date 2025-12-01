@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Akita Connect - The Premier Community for Akita Owners",
     description: "Join the largest community of Akita owners, breeders, and enthusiasts.",
+    url: "https://akitaconnect.com",
     siteName: "Akita Connect",
     locale: "en_US",
     type: "website",
