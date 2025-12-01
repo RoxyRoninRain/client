@@ -82,7 +82,7 @@ export default function LoginPage() {
                         <Button type="submit" className="w-full" disabled={loading}>
                             {loading ? "Signing in..." : "Sign In"}
                         </Button>
-                        <TestConnection />
+
                     </form>
                 </CardContent>
                 <CardFooter className="flex justify-center">
@@ -98,35 +98,4 @@ export default function LoginPage() {
     );
 }
 
-function TestConnection() {
-    const [status, setStatus] = useState<string>("");
 
-    const testConnection = async () => {
-        setStatus("Testing...");
-        console.log("Test button clicked");
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hello`);
-            console.log("Fetch response received", res);
-            const data = await res.json();
-            console.log("Data parsed", data);
-            setStatus("Success: " + JSON.stringify(data));
-        } catch (err) {
-            console.error("Fetch error:", err);
-            setStatus("Error: " + String(err));
-        }
-    };
-
-    return (
-        <div className="mt-4 flex flex-col items-center gap-2">
-            <button
-                type="button"
-                onClick={testConnection}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
-                Test Local Connection
-            </button>
-            <p className="text-[10px] text-gray-400">API: {process.env.NEXT_PUBLIC_API_URL || "Not Set"}</p>
-            {status && <p className="text-xs font-mono bg-gray-100 p-2 rounded max-w-[300px] break-all">{status}</p>}
-        </div>
-    );
-}
