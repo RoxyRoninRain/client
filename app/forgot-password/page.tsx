@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
 
         // Use hardcoded production URL to ensure it matches Supabase whitelist exactly.
         // Dynamic window.location.origin can sometimes be problematic if not exactly matching.
-        const redirectUrl = "https://client-cyan-beta.vercel.app/auth/callback?next=/update-password";
+        const redirectUrl = `${window.location.origin}/auth/callback?next=/update-password`;
         console.log("Reset Password Redirect URL:", redirectUrl);
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
