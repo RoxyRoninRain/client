@@ -12,6 +12,7 @@ import { Plus, Dog, Baby, Mail, Phone, Globe, MapPin, Edit2, Save, X, Camera } f
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InviteGenerator } from "@/components/InviteGenerator";
+
 import ImageUpload from "@/components/ImageUpload";
 
 interface Profile {
@@ -109,6 +110,16 @@ export default function ProfilePage() {
 
             if (dogsData) setDogs(dogsData);
             if (littersData) setLitters(littersData);
+
+            // Auto-edit if profile is incomplete
+            if (profileData) {
+                const isDefaultName = profileData.real_name === 'New User';
+                const hasRegion = profileData.region && profileData.region.trim().length > 0;
+
+                if (isDefaultName || !hasRegion) {
+                    setIsEditing(true);
+                }
+            }
 
             setLoading(false);
         }
@@ -343,6 +354,7 @@ export default function ProfilePage() {
                                         </Button>
                                     )}
                                     <InviteGenerator userId={profile.id} />
+
 
                                     {isEditing && (
                                         <div className="pt-4 border-t mt-4">
