@@ -30,11 +30,20 @@ export const metadata: Metadata = {
     siteName: "Akita Connect",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+        alt: "Akita Connect Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Akita Connect",
     description: "The premier platform for Akita owners and breeders.",
+    images: ["/logo.png"],
   },
 };
 
