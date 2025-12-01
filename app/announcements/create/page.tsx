@@ -16,6 +16,7 @@ export default function CreateAnnouncementPage() {
     const [loading, setLoading] = useState(false);
     const [title, setTitle] = useState("");
     const [summary, setSummary] = useState("");
+    const [content, setContent] = useState("");
     const [type, setType] = useState<'alert' | 'info' | 'notification'>("notification");
     const [eventDate, setEventDate] = useState("");
     const [location, setLocation] = useState("");
@@ -63,6 +64,7 @@ export default function CreateAnnouncementPage() {
         const { error } = await supabase.from('announcements').insert({
             title,
             summary,
+            content: content || summary, // Default to summary if content is empty
             type,
             is_event: isEvent,
             event_date: isEvent && eventDate ? new Date(eventDate).toISOString() : null,
@@ -126,8 +128,19 @@ export default function CreateAnnouncementPage() {
                                     value={summary}
                                     onChange={(e) => setSummary(e.target.value)}
                                     required
-                                    placeholder="Enter the details..."
-                                    className="h-32"
+                                    placeholder="Brief description..."
+                                    className="h-24"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="content">Content</Label>
+                                <Textarea
+                                    id="content"
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    placeholder="Full details (optional - will use summary if empty)"
+                                    className="h-48"
                                 />
                             </div>
 
