@@ -96,11 +96,11 @@ export default function ProfilePage() {
                 setFormData(profileData);
             }
 
-            // Fetch Dogs (Co-owned)
+            // Fetch Dogs
             const { data: dogsData } = await supabase
                 .from("dogs")
-                .select("*, dog_owners!inner(user_id)")
-                .eq("dog_owners.user_id", user.id);
+                .select("*")
+                .eq("owner_id", user.id);
 
             // Fetch Litters
             const { data: littersData } = await supabase
