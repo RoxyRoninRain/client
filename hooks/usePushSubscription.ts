@@ -7,7 +7,26 @@ import { createClient } from "@/utils/supabase/client";
 // Hardcoded for debugging to rule out Env Var issues
 const VAPID_PUBLIC_KEY = "BJWLhJtASm-DC2KaRE-riljlAT8_vRXVDMFSMkLOdK6vF-HodPId5nPM8UNWEgHwTb5ZZB3jqiUPn5XcFFrcxO-w";
 
-// Helper removed (using string key directly)
+function urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+
+    // Fix: Key usually decodes to 66 bytes due to base64 alignment, but P-256 is 65 bytes.
+    // We retain the first 65 bytes (0x04 + 64 bytes data).
+    if (outputArray.length > 65) {
+        return outputArray.slice(0, 65);
+    }
+    return outputArray;
+}
 
 export function usePushSubscription() {
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
@@ -46,7 +65,7 @@ export function usePushSubscription() {
 
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: VAPID_PUBLIC_KEY
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
             });
 
             // Save to Database
