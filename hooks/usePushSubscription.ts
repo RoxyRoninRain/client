@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -40,8 +41,14 @@ export function usePushSubscription() {
     }, []);
 
     const subscribe = async () => {
-        if (!isSupported || !VAPID_PUBLIC_KEY) {
-            console.error("Push notifications not supported or missing key");
+        if (!isSupported) {
+            console.error("Push notifications not supported");
+            toast.error("Push notifications are not supported on this device.");
+            return;
+        }
+        if (!VAPID_PUBLIC_KEY) {
+            console.error("Missing VAPID_PUBLIC_KEY");
+            toast.error("Configuration Error: VAPID Key is missing.");
             return;
         }
 
