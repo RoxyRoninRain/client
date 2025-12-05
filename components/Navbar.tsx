@@ -20,12 +20,26 @@ export default function Navbar({ user }: { user: User | null }) {
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        // ... (existing user fetch logic) ...
-        if (user) {
-            // ...
-        } else {
-            // ...
+        async function fetchUserRole() {
+            if (!user) {
+                setUserRole(null);
+                setUserId(null);
+                return;
+            }
+
+            setUserId(user.id);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (data?.role) {
+                setUserRole(data.role);
+            }
         }
+
+        fetchUserRole();
 
         // Fetch unread notifications count
         async function fetchNotifications() {
