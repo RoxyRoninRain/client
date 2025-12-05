@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Bell, Mail, MessageSquare, AtSign } from "lucide-react";
 import { toast } from "sonner";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 interface Preferences {
     email_announcements: boolean;
@@ -25,6 +26,7 @@ export default function SettingsPage() {
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const { isSupported, permission, subscription, subscribe, unsubscribe } = usePushSubscription();
     const supabase = createClient();
 
     useEffect(() => {
@@ -89,10 +91,77 @@ export default function SettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Bell className="text-teal-600" /> Notification Preferences
+                            <Bell className="text-teal-600" /> Push Notifications
                         </CardTitle>
                         <CardDescription>
-                            Manage how you want to be notified about activity on Akita Connect.
+                            Enable push notifications to stay updated on new messages and activity.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {!isSupported ? (
+                            <div className="text-red-500">
+                                Push notifications are not supported in this browser.
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <Label htmlFor="push-notifications" className="font-medium">
+                                            Enable Push Notifications
+                                        </Label>
+                                        <span className="text-sm text-gray-500">
+                                            {subscription ? "You are currently subscribed." : "Receive notifications on this device."}
+                                        </span>
+                                    </div>
+                                    <Switch
+                                        id="push-notifications"
+                                        checked={!!subscription}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) subscribe();
+                                            else unsubscribe();
+                                        }}
+                                    />
+                                </div>
+                                {permission === 'denied' && (
+                                    <p className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
+                                        Notifications are blocked by your browser depending settings. You need to manually enable them in your browser settings (click the lock icon in the address bar).
+                                    </p>
+                                )}
+
+                                {/* Test Button */}
+                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                            const { data: { user } } = await supabase.auth.getUser();
+                                            if (!user) return;
+                                            toast.info("Sending test notification...");
+                                            const res = await fetch('/api/test-push', {
+                                                method: 'POST',
+                                                body: JSON.stringify({ userId: user.id })
+                                            });
+                                            const result = await res.json();
+                                            console.log("Test Result:", result);
+                                            if (res.ok) toast.success("Test sent! Check your notifications.");
+                                            else toast.error("Test failed. Check console.");
+                                        }}
+                                    >
+                                        Send Test Notification
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Mail className="text-teal-600" /> Email Preferences
+                        </CardTitle>
+                        <CardDescription>
+                            Manage which emails you want to receive.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
