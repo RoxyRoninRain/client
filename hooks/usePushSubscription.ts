@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.replace(/['"]/g, '').trim();
+// Hardcoded for debugging to rule out Env Var issues
+const VAPID_PUBLIC_KEY = "BMc1PZgiZcIFsuhSzer99f539Nefipcwm01y_v6r-sSSI6PeS5kKKgqaWw6H4IVtGMLJeBcLkqHQ2Xv0CIfxZAg";
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
