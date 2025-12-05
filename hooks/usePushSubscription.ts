@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
 
 // Hardcoded for debugging to rule out Env Var issues
-const VAPID_PUBLIC_KEY = "BMc1PZgiZcIFsuhSzer99f539Nefipcwm01y_v6r-sSSI6PeS5kKKgqaWw6H4IVtGMLJeBcLkqHQ2Xv0CIfxZAg";
+const VAPID_PUBLIC_KEY = "BFBbU6NJ3JkGwyLUWKB7_XmAFvfWBlQjV2bKDurUmGBUvyXvk1XeisG00v8bxukoInogdUHIIxfs8RKf7QvvY5I8";
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
