@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, UserCircle, Menu, LogOut, Shield } from "lucide-react";
+import { Bell, UserCircle, Menu, LogOut, Shield, Settings } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 
@@ -163,6 +163,11 @@ export default function Navbar({ user }: { user: User | null }) {
                             <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600">
                                 <UserCircle size={24} className="text-gray-300" />
                             </div>
+                        </Link>
+
+                        {/* Settings Link (Desktop) */}
+                        <Link href="/settings" className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors" title="Settings">
+                            <Settings size={20} />
                         </Link>
 
                         {/* Logout Button (Desktop) */}
