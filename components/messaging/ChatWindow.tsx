@@ -15,6 +15,7 @@ interface Message {
     sender_id: string;
     created_at: string;
     is_read: boolean;
+    image_url?: string;
 }
 
 interface ChatWindowProps {
@@ -27,7 +28,9 @@ export default function ChatWindow({ conversationId, currentUserId }: ChatWindow
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const supabase = createClient();
 
     useEffect(() => {
@@ -97,6 +100,52 @@ export default function ChatWindow({ conversationId, currentUserId }: ChatWindow
         setSending(false);
     };
 
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const file = e.target.files[0];
+        setUploading(true);
+
+        // 1. Upload file
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${conversationId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('message-attachments')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            alert("Failed to upload image");
+            setUploading(false);
+            return;
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('message-attachments')
+            .getPublicUrl(filePath);
+
+        // 3. Send Message with Image
+        const { error: sendError } = await supabase
+            .from('messages')
+            .insert({
+                conversation_id: conversationId,
+                sender_id: currentUserId,
+                content: 'Sent an image',
+                image_url: publicUrl
+            });
+
+        if (sendError) {
+            console.error("Error sending image message:", sendError);
+            alert("Failed to send image");
+        }
+
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -125,9 +174,19 @@ export default function ChatWindow({ conversationId, currentUserId }: ChatWindow
                                 )}
                                 <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[75%] rounded-lg p-3 ${isMe
-                                            ? 'bg-teal-600 text-white rounded-br-none'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'
+                                        ? 'bg-teal-600 text-white rounded-br-none'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'
                                         }`}>
+                                        {msg.image_url && (
+                                            <div className="mb-2">
+                                                <img
+                                                    src={msg.image_url}
+                                                    alt="Attached"
+                                                    className="rounded-md max-h-64 object-cover cursor-pointer hover:opacity-90"
+                                                    onClick={() => window.open(msg.image_url, '_blank')}
+                                                />
+                                            </div>
+                                        )}
                                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                                         <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-teal-100' : 'text-gray-400'}`}>
                                             {format(new Date(msg.created_at), 'h:mm a')}
@@ -144,8 +203,21 @@ export default function ChatWindow({ conversationId, currentUserId }: ChatWindow
             {/* Input Area */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="text-gray-500">
-                        <ImageIcon size={20} />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                    />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-gray-500"
+                        disabled={uploading}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        {uploading ? <Loader2 className="animate-spin" size={20} /> : <ImageIcon size={20} />}
                     </Button>
                     <Input
                         value={newMessage}
