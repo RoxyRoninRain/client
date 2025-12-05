@@ -79,9 +79,11 @@ export function usePushSubscription() {
 
             setSubscription(sub);
             setPermission(Notification.permission);
+            toast.success("Notifications enabled!");
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to subscribe to Push', error);
+            toast.error(`Subscription failed: ${error.message || 'Unknown error'}`);
             return false;
         }
     };
