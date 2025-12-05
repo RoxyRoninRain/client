@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, MapPin, Mail, Phone, Globe, Baby, Dog, Award, Edit2, ArrowLeft } from "lucide-react";
+import { ShieldCheck, MapPin, Mail, Phone, Globe, Baby, Dog, Award, Edit2, ArrowLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import DogProfile from "@/components/DogProfile";
 
@@ -230,11 +230,29 @@ export default function PublicProfilePage() {
                                             </Button>
                                         </Link>
                                     ) : (
-                                        profile.contact_email && (
-                                            <Button className="w-full flex items-center gap-2" onClick={() => window.location.href = `mailto:${profile.contact_email}`}>
-                                                <Mail size={16} /> Contact Breeder
-                                            </Button>
-                                        )
+                                        <div className="flex flex-col gap-2 w-full">
+                                            {currentUser && (
+                                                <Button
+                                                    className="w-full flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white"
+                                                    onClick={async () => {
+                                                        const { data: convId, error } = await supabase.rpc('start_conversation', { target_user_id: profile.id });
+                                                        if (error) {
+                                                            console.error("Error starting conversation:", error);
+                                                            alert("Failed to start conversation. Please try again.");
+                                                        } else if (convId) {
+                                                            window.location.href = `/messages/${convId}`;
+                                                        }
+                                                    }}
+                                                >
+                                                    <MessageSquare size={16} /> Message
+                                                </Button>
+                                            )}
+                                            {profile.contact_email && (
+                                                <Button variant="outline" className="w-full flex items-center gap-2" onClick={() => window.location.href = `mailto:${profile.contact_email}`}>
+                                                    <Mail size={16} /> Email Breeder
+                                                </Button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>

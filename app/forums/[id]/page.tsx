@@ -157,6 +157,25 @@ export default function TopicPage() {
                 return post;
             }));
             setPosts(postsWithAuthors || []);
+
+            // Handle Mentions
+            const mentions = newReply.match(/@(\w+)/g);
+            if (mentions) {
+                const uniqueMentions = [...new Set(mentions)];
+                for (const mention of uniqueMentions) {
+                    const username = mention.substring(1); // Remove @
+                    // Call RPC to notify
+                    // We don't await this to avoid blocking the UI
+                    supabase.rpc('notify_mention', {
+                        mentioned_username: username,
+                        topic_id: id,
+                        post_id: null // We don't have the new post ID easily unless we return it from insert. 
+                        // Actually, insert returns data if we ask.
+                    }).then(({ error }) => {
+                        if (error) console.error("Error notifying mention:", error);
+                    });
+                }
+            }
         }
         setSubmitting(false);
     }
@@ -230,14 +249,14 @@ export default function TopicPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-2 sm:p-8 font-[family-name:var(--font-geist-sans)]">
             <div className="max-w-4xl mx-auto space-y-6">
                 <Link href={topic.category_id ? `/forums/category/${topic.category_id}` : "/forums"} className="inline-flex items-center text-sm text-gray-500 hover:text-teal-600 transition-colors mb-4">
                     <ArrowLeft size={16} className="mr-1" /> Back to {topic.category_id ? "Category" : "Forums"}
                 </Link>
 
                 <Card className="border-2 border-gray-300 dark:border-gray-600 border-l-4 border-l-teal-500 shadow-md">
-                    <CardHeader>
+                    <CardHeader className="p-3 sm:p-6">
                         <div className="flex items-center gap-2 mb-2">
                             {topic.is_pinned && <Pin size={16} className="text-teal-600 fill-teal-600" />}
                             {topic.is_locked && <Lock size={16} className="text-red-500" />}
@@ -257,7 +276,7 @@ export default function TopicPage() {
                 <div className="space-y-6">
                     {posts.map((post) => (
                         <Card key={post.id} className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 shadow-md hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6">
+                            <CardContent className="p-3 sm:p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -330,12 +349,12 @@ export default function TopicPage() {
                 {/* Reply Box */}
                 {!topic.is_locked ? (
                     <Card className="mt-8">
-                        <CardHeader>
+                        <CardHeader className="p-3 sm:p-6">
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <MessageSquare size={18} /> Leave a Reply
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-3 sm:p-6">
                             {userId ? (
                                 <div className="space-y-4">
                                     <Textarea

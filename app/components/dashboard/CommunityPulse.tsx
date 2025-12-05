@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MessageSquare, Users } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 
 interface Topic {
@@ -29,6 +30,7 @@ export default function CommunityPulse() {
     const [newMembers, setNewMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
+    const router = useRouter();
 
     useEffect(() => {
         async function fetchData() {
@@ -104,15 +106,25 @@ export default function CommunityPulse() {
                             <p className="text-xs text-gray-400">No recent discussions.</p>
                         ) : (
                             topics.map((topic) => (
-                                <Link href={`/forums/${topic.id}`} key={topic.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                                <div
+                                    key={topic.id}
+                                    onClick={() => router.push(`/forums/${topic.id}`)}
+                                    className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                >
                                     <MessageSquare size={16} className="mt-1 text-teal-500 shrink-0" />
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{topic.title}</h4>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            by <Link href={topic.profiles ? `/profile/${topic.profiles.id}` : '#'} className="hover:text-teal-600 hover:underline">{topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"}</Link> • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
+                                            by <Link
+                                                href={topic.profiles ? `/profile/${topic.profiles.id}` : '#'}
+                                                className="hover:text-teal-600 hover:underline"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"}
+                                            </Link> • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
                                         </p>
                                     </div>
-                                </Link>
+                                </div>
                             ))
                         )}
                     </div>
