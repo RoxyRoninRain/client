@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
 
 // Hardcoded for debugging to rule out Env Var issues
-const VAPID_PUBLIC_KEY = "BJWLhJtASm-DC2KaRE-riljlAT8_vRXVDMFSMkLOdK6vF-HodPId5nPM8UNWEgHwTb5ZZB3jqiUPn5XcFFrcxO-w";
+const VAPID_PUBLIC_KEY = "BH2LY511vUFZpaeE-In8dEkhtPiEQtXS_uYeHAjgiXMl5xYAPBdNcrkGROXw-70tgLrJWwgMTM618UQMQEuzukk";
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -18,12 +18,6 @@ function urlBase64ToUint8Array(base64String: string) {
 
     for (let i = 0; i < rawData.length; ++i) {
         outputArray[i] = rawData.charCodeAt(i);
-    }
-
-    // Fix: Key usually decodes to 66 bytes due to base64 alignment, but P-256 is 65 bytes.
-    // We retain the first 65 bytes (0x04 + 64 bytes data).
-    if (outputArray.length > 65) {
-        return outputArray.slice(0, 65);
     }
     return outputArray;
 }
