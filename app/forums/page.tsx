@@ -61,15 +61,45 @@ export default function ForumsPage() {
                     profiles (
                         real_name,
                         kennel_name
+                    ),
+                    forum_posts (
+                        created_at,
+                        author_id,
+                        profiles (
+                            real_name,
+                            kennel_name
+                        )
                     )
                 `)
                 .eq('category_id', cat.id)
                 .order('created_at', { ascending: false })
                 .limit(3);
 
+            const topicsWithActivity = (topics || []).map((topic: any) => {
+                const posts = topic.forum_posts || [];
+                let lastActiveTime = new Date(topic.created_at).getTime();
+                let lastActiveUser = topic.profiles;
+                let action = "Created";
+
+                if (posts.length > 0) {
+                    const latestPost = posts.reduce((latest: any, current: any) => {
+                        return new Date(current.created_at).getTime() > new Date(latest.created_at).getTime()
+                            ? current
+                            : latest;
+                    }, posts[0]);
+
+                    if (new Date(latestPost.created_at).getTime() > lastActiveTime) {
+                        lastActiveTime = new Date(latestPost.created_at).getTime();
+                        lastActiveUser = latestPost.profiles;
+                        action = "Commented";
+                    }
+                }
+                return { ...topic, lastActiveTime, lastActiveUser, action };
+            });
+
             return {
                 ...cat,
-                recentTopics: topics || []
+                recentTopics: topicsWithActivity
             };
         }));
 
@@ -167,9 +197,9 @@ export default function ForumsPage() {
                                                             {topic.title}
                                                         </Link>
                                                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                            <span>by {topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"}</span>
+                                                            <span>{topic.action} by {topic.lastActiveUser?.real_name || topic.lastActiveUser?.kennel_name || "Unknown"}</span>
                                                             <span>•</span>
-                                                            <span>{formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}</span>
+                                                            <span>{formatDistanceToNow(new Date(topic.lastActiveTime), { addSuffix: true })}</span>
                                                         </div>
                                                     </div>
                                                 </div>
