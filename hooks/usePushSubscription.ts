@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
 
 // Hardcoded for debugging to rule out Env Var issues
-const VAPID_PUBLIC_KEY = "BH2LY511vUFZpaeE-In8dEkhtPiEQtXS_uYeHAjgiXMl5xYAPBdNcrkGROXw-70tgLrJWwgMTM618UQMQEuzukk";
+
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -47,7 +47,7 @@ export function usePushSubscription() {
             toast.error("Push notifications are not supported on this device.");
             return;
         }
-        if (!VAPID_PUBLIC_KEY) {
+        if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
             console.error("Missing VAPID_PUBLIC_KEY");
             toast.error("Configuration Error: VAPID Key is missing.");
             return;
@@ -59,7 +59,7 @@ export function usePushSubscription() {
 
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
             });
 
             // Save to Database

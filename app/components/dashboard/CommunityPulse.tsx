@@ -34,7 +34,7 @@ export default function CommunityPulse() {
 
     useEffect(() => {
         async function fetchData() {
-            // Fetch Recent Topics
+            // Fetch Recent Topics with their latest posts to determine activity
             const { data: topicsData } = await supabase
                 .from('forum_topics')
                 .select(`
@@ -45,19 +45,41 @@ export default function CommunityPulse() {
                         id,
                         real_name,
                         kennel_name
+                    ),
+                    forum_posts (
+                        created_at
                     )
                 `)
+                // We fetch a bit more to ensure we catch older topics with new comments
                 .order('created_at', { ascending: false })
-                .limit(20);
+                .limit(50);
 
-            if (topicsData) setTopics(topicsData as any);
+            if (topicsData) {
+                // Client-side sort by "Last Active" (either created_at or latest post)
+                const sortedTopics = (topicsData as any[])
+                    .map(topic => {
+                        // Find the latest post date
+                        const posts = topic.forum_posts || [];
+                        const latestPostTime = posts.length > 0
+                            ? Math.max(...posts.map((p: any) => new Date(p.created_at).getTime()))
+                            : 0;
+                        const topicTime = new Date(topic.created_at).getTime();
+                        const lastActive = Math.max(topicTime, latestPostTime);
+
+                        return { ...topic, lastActive };
+                    })
+                    .sort((a, b) => b.lastActive - a.lastActive)
+                    .slice(0, 5); // Show top 5 most active
+
+                setTopics(sortedTopics);
+            }
 
             // Fetch New Members
             const { data: membersData } = await supabase
                 .from('profiles')
                 .select('id, real_name, kennel_name, region, created_at')
                 .order('created_at', { ascending: false })
-                .limit(3);
+                .limit(5);
 
             if (membersData) setNewMembers(membersData as any);
 
@@ -121,7 +143,7 @@ export default function CommunityPulse() {
                                                 onClick={(e) => e.stopPropagation()}
                                             >
                                                 {topic.profiles?.real_name || topic.profiles?.kennel_name || "Unknown"}
-                                            </Link> • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}
+                                            </Link> • {formatDistanceToNow(new Date((topic as any).lastActive || topic.created_at), { addSuffix: true })}
                                         </p>
                                     </div>
                                 </div>

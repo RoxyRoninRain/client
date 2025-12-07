@@ -44,8 +44,8 @@ export async function POST(req: Request) {
     // 2. Prepare Payload
     const payload = JSON.stringify({
         title: record.title || 'Akita Connect',
-        body: record.content || 'You have a new notification',
-        url: record.url || '/',
+        body: record.message || record.content || 'You have a new notification',
+        url: record.link || record.url || '/',
     });
 
     // 3. Send Notifications
@@ -70,5 +70,70 @@ export async function POST(req: Request) {
         })
     );
 
-    return NextResponse.json({ success: true, results });
+    // 3. Email Notification Logic
+    // We run this in parallel with Push
+    try {
+        const resendApiKey = process.env.RESEND_API_KEY;
+        if (resendApiKey) {
+            const { Resend } = await import('resend');
+            const resend = new Resend(resendApiKey);
+
+            // Fetch User Email
+            const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(record.user_id);
+
+            if (user && user.email) {
+                // Fetch Notification Preferences
+                const { data: prefs } = await supabase
+                    .from('notification_preferences')
+                    .select('*')
+                    .eq('user_id', record.user_id)
+                    .single();
+
+                // Determine if we should send email
+                // Default to 'email_messages' if type is unknown, or check record.type
+                // We assume record.type maps to preference keys: 'announcement', 'reply', 'message', 'mention'
+                const type = record.type || 'message';
+                let shouldSendEmail = false;
+
+                if (prefs) {
+                    if (type === 'announcement' && prefs.email_announcements) shouldSendEmail = true;
+                    else if (type === 'reply' && prefs.email_replies) shouldSendEmail = true;
+                    else if (type === 'mention' && prefs.email_mentions) shouldSendEmail = true;
+                    else if (type === 'message' && prefs.email_messages) shouldSendEmail = true;
+                    // Fallback: if type is unknown but some general flag is on? 
+                    // For now, strict mapping or default 'message'.
+                } else {
+                    // Default to true if no prefs set? Or false? 
+                    // Usually safer to default to false or true depending on UX. 
+                    // Given the settings page defaults to ALL TRUE, we might assume true if no record exists yet.
+                    shouldSendEmail = true;
+                }
+
+                if (shouldSendEmail) {
+                    await resend.emails.send({
+                        from: 'Akita Connect <notifications@akitaconnect.com>', // User needs to configure domain
+                        to: user.email,
+                        subject: record.title || 'New Notification',
+                        html: `
+                            <div style="font-family: sans-serif; padding: 20px;">
+                                <h2>${record.title || 'New Notification'}</h2>
+                                <p>${record.message || record.content || 'You have a new notification on Akita Connect.'}</p>
+                                <a href="${record.link || record.url || process.env.NEXT_PUBLIC_API_URL}" style="display: inline-block; padding: 10px 20px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 5px;">
+                                    View on Akita Connect
+                                </a>
+                            </div>
+                        `
+                    });
+                    console.log(`Email sent to ${user.email}`);
+                }
+            }
+        } else {
+            console.warn("RESEND_API_KEY is missing, skipping email.");
+        }
+    } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+        // Do not fail the request if email fails, Push might have succeeded
+    }
+
+    return NextResponse.json({ success: true, pushResults: results });
 }
