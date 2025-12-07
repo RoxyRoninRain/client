@@ -8,15 +8,22 @@ const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY!;
 const webhookSecret = process.env.WEBHOOK_SECRET;
 
-if (vapidPublicKey && vapidPrivateKey) {
-    webPush.setVapidDetails(
-        'mailto:support@akitaconnect.com',
-        vapidPublicKey,
-        vapidPrivateKey
-    );
+function initWebPush() {
+    if (vapidPublicKey && vapidPrivateKey) {
+        try {
+            webPush.setVapidDetails(
+                'mailto:support@akitaconnect.com',
+                vapidPublicKey,
+                vapidPrivateKey
+            );
+        } catch (err) {
+            console.error("Failed to set VAPID details:", err);
+        }
+    }
 }
 
 export async function POST(req: Request) {
+    initWebPush();
     const signature = req.headers.get('x-webhook-secret');
     if (webhookSecret && signature !== webhookSecret) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
